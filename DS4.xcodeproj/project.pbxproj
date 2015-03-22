@@ -1,0 +1,274 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4550163E1ABE6BDC00F43F74 /* DS4.h in Headers */ = {isa = PBXBuildFile; fileRef = 4550163D1ABE6BDC00F43F74 /* DS4.h */; };
+		455016401ABE6BDC00F43F74 /* DS4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4550163F1ABE6BDC00F43F74 /* DS4.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		455016381ABE6BDC00F43F74 /* DS4.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DS4.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		4550163C1ABE6BDC00F43F74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4550163D1ABE6BDC00F43F74 /* DS4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DS4.h; sourceTree = "<group>"; };
+		4550163F1ABE6BDC00F43F74 /* DS4.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		455016341ABE6BDC00F43F74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4550162E1ABE6BDC00F43F74 = {
+			isa = PBXGroup;
+			children = (
+				4550163A1ABE6BDC00F43F74 /* DS4 */,
+				455016391ABE6BDC00F43F74 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		455016391ABE6BDC00F43F74 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				455016381ABE6BDC00F43F74 /* DS4.kext */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4550163A1ABE6BDC00F43F74 /* DS4 */ = {
+			isa = PBXGroup;
+			children = (
+				4550163D1ABE6BDC00F43F74 /* DS4.h */,
+				4550163F1ABE6BDC00F43F74 /* DS4.cpp */,
+				4550163B1ABE6BDC00F43F74 /* Supporting Files */,
+			);
+			path = DS4;
+			sourceTree = "<group>";
+		};
+		4550163B1ABE6BDC00F43F74 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				4550163C1ABE6BDC00F43F74 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		455016351ABE6BDC00F43F74 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4550163E1ABE6BDC00F43F74 /* DS4.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		455016371ABE6BDC00F43F74 /* DS4 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 455016431ABE6BDC00F43F74 /* Build configuration list for PBXNativeTarget "DS4" */;
+			buildPhases = (
+				455016331ABE6BDC00F43F74 /* Sources */,
+				455016341ABE6BDC00F43F74 /* Frameworks */,
+				455016351ABE6BDC00F43F74 /* Headers */,
+				455016361ABE6BDC00F43F74 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DS4;
+			productName = DS4;
+			productReference = 455016381ABE6BDC00F43F74 /* DS4.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4550162F1ABE6BDC00F43F74 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = "Little Black Hat";
+				TargetAttributes = {
+					455016371ABE6BDC00F43F74 = {
+						CreatedOnToolsVersion = 6.2;
+					};
+				};
+			};
+			buildConfigurationList = 455016321ABE6BDC00F43F74 /* Build configuration list for PBXProject "DS4" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 4550162E1ABE6BDC00F43F74;
+			productRefGroup = 455016391ABE6BDC00F43F74 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				455016371ABE6BDC00F43F74 /* DS4 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		455016361ABE6BDC00F43F74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		455016331ABE6BDC00F43F74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				455016401ABE6BDC00F43F74 /* DS4.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		455016411ABE6BDC00F43F74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		455016421ABE6BDC00F43F74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		455016441ABE6BDC00F43F74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				INFOPLIST_FILE = DS4/Info.plist;
+				MODULE_NAME = com.LittleBlackHat.DS4;
+				MODULE_VERSION = 1.0.0d1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Debug;
+		};
+		455016451ABE6BDC00F43F74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				INFOPLIST_FILE = DS4/Info.plist;
+				MODULE_NAME = com.LittleBlackHat.DS4;
+				MODULE_VERSION = 1.0.0d1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		455016321ABE6BDC00F43F74 /* Build configuration list for PBXProject "DS4" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				455016411ABE6BDC00F43F74 /* Debug */,
+				455016421ABE6BDC00F43F74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		455016431ABE6BDC00F43F74 /* Build configuration list for PBXNativeTarget "DS4" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				455016441ABE6BDC00F43F74 /* Debug */,
+				455016451ABE6BDC00F43F74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4550162F1ABE6BDC00F43F74 /* Project object */;
+}
