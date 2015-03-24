@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4550163E1ABE6BDC00F43F74 /* DS4.h in Headers */ = {isa = PBXBuildFile; fileRef = 4550163D1ABE6BDC00F43F74 /* DS4.h */; };
 		455016401ABE6BDC00F43F74 /* DS4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4550163F1ABE6BDC00F43F74 /* DS4.cpp */; };
+		4550164B1ABE733A00F43F74 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4550164A1ABE733A00F43F74 /* IOKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +17,12 @@
 		4550163C1ABE6BDC00F43F74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4550163D1ABE6BDC00F43F74 /* DS4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DS4.h; sourceTree = "<group>"; };
 		4550163F1ABE6BDC00F43F74 /* DS4.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4.cpp; sourceTree = "<group>"; };
+		455016481ABE733400F43F74 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
+		4550164A1ABE733A00F43F74 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		4550164C1ABE734400F43F74 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		4550164E1ABE734800F43F74 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		455016501ABE734E00F43F74 /* PreferencePanes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PreferencePanes.framework; path = System/Library/Frameworks/PreferencePanes.framework; sourceTree = SDKROOT; };
+		45589C111AC0FDF900C9C6A9 /* dualshock4hid.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dualshock4hid.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -23,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4550164B1ABE733A00F43F74 /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,6 +40,7 @@
 		4550162E1ABE6BDC00F43F74 = {
 			isa = PBXGroup;
 			children = (
+				45DA3E8A1ABF251C008A40A6 /* Frameworks */,
 				4550163A1ABE6BDC00F43F74 /* DS4 */,
 				455016391ABE6BDC00F43F74 /* Products */,
 			);
@@ -51,6 +60,7 @@
 				4550163D1ABE6BDC00F43F74 /* DS4.h */,
 				4550163F1ABE6BDC00F43F74 /* DS4.cpp */,
 				4550163B1ABE6BDC00F43F74 /* Supporting Files */,
+				45589C111AC0FDF900C9C6A9 /* dualshock4hid.h */,
 			);
 			path = DS4;
 			sourceTree = "<group>";
@@ -61,6 +71,18 @@
 				4550163C1ABE6BDC00F43F74 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		45DA3E8A1ABF251C008A40A6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				455016501ABE734E00F43F74 /* PreferencePanes.framework */,
+				4550164E1ABE734800F43F74 /* CoreFoundation.framework */,
+				4550164C1ABE734400F43F74 /* Cocoa.framework */,
+				4550164A1ABE733A00F43F74 /* IOKit.framework */,
+				455016481ABE733400F43F74 /* ForceFeedback.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -227,6 +249,10 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = DS4/Info.plist;
 				MODULE_NAME = com.LittleBlackHat.DS4;
 				MODULE_VERSION = 1.0.0d1;
@@ -240,6 +266,10 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = DS4/Info.plist;
 				MODULE_NAME = com.LittleBlackHat.DS4;
 				MODULE_VERSION = 1.0.0d1;
@@ -267,6 +297,7 @@
 				455016451ABE6BDC00F43F74 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

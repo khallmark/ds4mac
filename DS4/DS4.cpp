@@ -1,1 +1,71 @@
-/* add your code here */
+#include <IOKit/IOLib.h>
+#include <IOKit/usb/IOUSBDevice.h>
+#include <IOKit/usb/IOUSBInterface.h>
+
+namespace HID_DS4 {
+	#include "dualshock4hid.h"
+}
+
+#include "DS4.h"
+
+// This required macro defines the class's constructors, destructors,
+// and several other methods I/O Kit requires.
+OSDefineMetaClassAndStructors(SonyPlaystationDualShock4, IOHIDDevice)
+
+// Define the driver's superclass.
+#define super IOHIDDevice
+
+//bool SonyPlaystationDualShock4::init(OSDictionary *dict)
+//{
+//	bool result = IOUSBDevice::init(dict);
+//	
+//	IOLog("Initializing\n");
+//	
+//	return result;
+//}
+
+//void SonyPlaystationDualShock4::free(void)
+//{
+//	IOLog("Freeing\n");
+//	super::free();
+//}
+//
+IOService *SonyPlaystationDualShock4::probe(IOService *provider,
+												SInt32 *score)
+{
+	IOService *result = IOHIDDevice::probe(provider, score);
+	IOLog("Probing\n");
+	return result;
+}
+
+bool SonyPlaystationDualShock4::start(IOService *provider)
+{
+	bool result = IOHIDDevice::start(provider);
+	IOLog("Starting\n");
+	return result;
+}
+//
+//void SonyPlaystationDualShock4::stop(IOService *provider)
+//{
+//	IOLog("Stopping\n");
+//	super::stop(provider);
+//}
+
+IOReturn SonyPlaystationDualShock4::newReportDescriptor(IOMemoryDescriptor **descriptor) const
+{
+	IOLog("In report descriptor\n");
+	IOBufferMemoryDescriptor *buffer = IOBufferMemoryDescriptor::inTaskWithOptions(
+																				   kernel_task,
+																				   0,
+																				   sizeof(HID_DS4::ReportDescriptor)
+																				   );
+	
+	if (buffer == NULL)
+		return kIOReturnNoResources;
+	
+	buffer->writeBytes(0, HID_DS4::ReportDescriptor,sizeof(HID_DS4::ReportDescriptor));
+	
+	*descriptor = buffer;
+	
+	return kIOReturnSuccess;
+}

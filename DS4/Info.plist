@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.LittleBlackHat.$(PRODUCT_NAME:rfc1034identifier)</string>
+	<string>com.LittleBlackHat.driver.DS4</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -21,10 +21,35 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>IOKitPersonalities</key>
-	<dict/>
+	<dict>
+		<key>DS4</key>
+		<dict>
+			<key>idVendor</key>
+			<string>1356</string>
+			<key>idProduct</key>
+			<string>1476</string>
+			<key>CFBundleIdentifier</key>
+			<string>com.LittleBlackHat.driver.DS4</string>
+			<key>IOClass</key>
+			<string>SonyPlaystationDualShock4</string>
+			<key>IOKitDebug</key>
+			<integer>65535</integer>
+			<key>IOProviderClass</key>
+			<string>IOUSBDevice</string>
+		</dict>
+	</dict>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2015 Little Black Hat. All rights reserved.</string>
 	<key>OSBundleLibraries</key>
-	<dict/>
+	<dict>
+		<key>com.apple.iokit.IOHIDFamily</key>
+		<string>2.0</string>
+		<key>com.apple.kpi.iokit</key>
+		<string>14.1</string>
+		<key>com.apple.kpi.libkern</key>
+		<string>14.1</string>
+		<key>com.apple.kpi.mach</key>
+		<string>14.1</string>
+	</dict>
 </dict>
 </plist>
