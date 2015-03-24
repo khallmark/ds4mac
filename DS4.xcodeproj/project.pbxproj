@@ -10,6 +10,8 @@
 		4550163E1ABE6BDC00F43F74 /* DS4.h in Headers */ = {isa = PBXBuildFile; fileRef = 4550163D1ABE6BDC00F43F74 /* DS4.h */; };
 		455016401ABE6BDC00F43F74 /* DS4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4550163F1ABE6BDC00F43F74 /* DS4.cpp */; };
 		4550164B1ABE733A00F43F74 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4550164A1ABE733A00F43F74 /* IOKit.framework */; };
+		45589C141AC1E3B000C9C6A9 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 45589C121AC1E3B000C9C6A9 /* LICENSE */; };
+		45589C151AC1E3B000C9C6A9 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 45589C131AC1E3B000C9C6A9 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,8 @@
 		4550164E1ABE734800F43F74 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		455016501ABE734E00F43F74 /* PreferencePanes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PreferencePanes.framework; path = System/Library/Frameworks/PreferencePanes.framework; sourceTree = SDKROOT; };
 		45589C111AC0FDF900C9C6A9 /* dualshock4hid.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dualshock4hid.h; sourceTree = "<group>"; };
+		45589C121AC1E3B000C9C6A9 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		45589C131AC1E3B000C9C6A9 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +44,8 @@
 		4550162E1ABE6BDC00F43F74 = {
 			isa = PBXGroup;
 			children = (
+				45589C121AC1E3B000C9C6A9 /* LICENSE */,
+				45589C131AC1E3B000C9C6A9 /* README.md */,
 				45DA3E8A1ABF251C008A40A6 /* Frameworks */,
 				4550163A1ABE6BDC00F43F74 /* DS4 */,
 				455016391ABE6BDC00F43F74 /* Products */,
@@ -153,6 +159,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45589C141AC1E3B000C9C6A9 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,6 +170,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45589C151AC1E3B000C9C6A9 /* README.md in Sources */,
 				455016401ABE6BDC00F43F74 /* DS4.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
