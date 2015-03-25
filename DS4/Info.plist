@@ -24,10 +24,12 @@
 	<dict>
 		<key>DS4</key>
 		<dict>
+			<key>IOMatchCategory</key>
+			<string>SonyPlaystationDualShock4</string>
 			<key>idVendor</key>
-			<string>1356</string>
+			<integer>1356</integer>
 			<key>idProduct</key>
-			<string>1476</string>
+			<integer>1476</integer>
 			<key>CFBundleIdentifier</key>
 			<string>com.LittleBlackHat.driver.DS4</string>
 			<key>IOClass</key>
