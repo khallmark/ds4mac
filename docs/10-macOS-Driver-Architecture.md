@@ -142,7 +142,7 @@ graph TB
 The driver is organized into four distinct layers, each with a clear responsibility:
 
 ```mermaid
-graph LR
+graph TD
     subgraph Layer1["Layer 1: Transport"]
         USB["USB Transport<br/>IOUserUSBHostDevice<br/>(in dext)"]
         BT["Bluetooth Transport<br/>IOBluetooth.framework<br/>(in companion app)"]

@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ds4mac}",
+            "name": "Debug DS4Tool",
+            "program": "${workspaceFolder:ds4mac}/.build/debug/DS4Tool",
+            "preLaunchTask": "swift: Build Debug DS4Tool"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ds4mac}",
+            "name": "Release DS4Tool",
+            "program": "${workspaceFolder:ds4mac}/.build/release/DS4Tool",
+            "preLaunchTask": "swift: Build Release DS4Tool"
+        }
+    ]
+}
