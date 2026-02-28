@@ -5,6 +5,7 @@
 
 import Foundation
 import DS4Protocol
+import DS4Transport
 
 // MARK: - JSON Encoder (shared — must be initialized before dispatch)
 
@@ -78,15 +79,30 @@ default:
     exit(1)
 }
 
+// MARK: - Transport Helper
+
+/// Create a USB transport, connect to the first DS4 controller, and return the transport + device info.
+/// Exits on failure.
+func openTransport() -> (DS4USBTransport, DS4DeviceInfo) {
+    let transport = DS4USBTransport()
+    do {
+        try transport.connect()
+    } catch {
+        fputs("Error: \(error.localizedDescription)\n", stderr)
+        exit(1)
+    }
+    guard let info = transport.deviceInfo else {
+        fputs("Error: No device info available after connect\n", stderr)
+        exit(1)
+    }
+    return (transport, info)
+}
+
 // MARK: - Info Command
 
 func runInfo(json: Bool) {
-    let hid = DS4HIDManager()
-    guard let info = hid.open() else {
-        fputs("Error: No DualShock 4 controller found\n", stderr)
-        exit(1)
-    }
-    defer { hid.close() }
+    let (transport, info) = openTransport()
+    defer { transport.disconnect() }
 
     if json {
         do {
@@ -122,16 +138,12 @@ func runInfo(json: Bool) {
 // MARK: - Monitor Command
 
 func runMonitor(json: Bool, timeout: TimeInterval) {
-    let hid = DS4HIDManager()
-    guard let info = hid.open() else {
-        fputs("Error: No DualShock 4 controller found\n", stderr)
-        exit(1)
-    }
+    let (transport, info) = openTransport()
 
     // For Bluetooth connections, read feature report 0x02 to trigger extended report mode
     if info.connectionType == .bluetooth {
         fputs("Bluetooth connection detected, requesting extended reports...\n", stderr)
-        let calibrationData = hid.readFeatureReport(
+        let calibrationData = transport.readFeatureReport(
             reportID: DS4ReportID.calibrationUSB,
             length: DS4ReportSize.calibration
         )
@@ -151,7 +163,8 @@ func runMonitor(json: Bool, timeout: TimeInterval) {
     var reportCount = 0
     let displayInterval = json ? 1 : 25
 
-    hid.startInputReportPolling { reportBytes in
+    transport.onEvent = { event in
+        guard case .inputReport(let reportBytes) = event else { return }
         reportCount += 1
 
         do {
@@ -181,13 +194,14 @@ func runMonitor(json: Bool, timeout: TimeInterval) {
             fputs("Parse error: \(error)\n", stderr)
         }
     }
+    transport.startInputReportPolling()
 
     // Schedule a timer to stop after the timeout
     let timer = Timer(timeInterval: timeout, repeats: false) { _ in
         if !json {
             fputs("\nMonitor timeout (\(Int(timeout))s) reached. Exiting.\n", stderr)
         }
-        hid.close()
+        transport.disconnect()
         exit(0)
     }
     RunLoop.current.add(timer, forMode: .default)
@@ -199,12 +213,8 @@ func runMonitor(json: Bool, timeout: TimeInterval) {
 // MARK: - LED Command
 
 func runLED(r: UInt8, g: UInt8, b: UInt8, json: Bool) {
-    let hid = DS4HIDManager()
-    guard let info = hid.open() else {
-        fputs("Error: No DualShock 4 controller found\n", stderr)
-        exit(1)
-    }
-    defer { hid.close() }
+    let (transport, info) = openTransport()
+    defer { transport.disconnect() }
 
     let outputState = DS4OutputState(
         ledRed: r,
@@ -219,7 +229,13 @@ func runLED(r: UInt8, g: UInt8, b: UInt8, json: Bool) {
         report = DS4OutputReportBuilder.buildUSB(outputState)
     }
 
-    let success = hid.sendOutputReport(report)
+    let success: Bool
+    do {
+        success = try transport.sendOutputReport(report)
+    } catch {
+        fputs("Error: \(error.localizedDescription)\n", stderr)
+        success = false
+    }
 
     if json {
         let result: [String: Any] = [
@@ -249,11 +265,7 @@ func runLED(r: UInt8, g: UInt8, b: UInt8, json: Bool) {
 // MARK: - Rumble Command
 
 func runRumble(heavy: UInt8, light: UInt8, json: Bool) {
-    let hid = DS4HIDManager()
-    guard let info = hid.open() else {
-        fputs("Error: No DualShock 4 controller found\n", stderr)
-        exit(1)
-    }
+    let (transport, info) = openTransport()
 
     let outputState = DS4OutputState(
         rumbleHeavy: heavy,
@@ -267,15 +279,15 @@ func runRumble(heavy: UInt8, light: UInt8, json: Bool) {
         report = DS4OutputReportBuilder.buildUSB(outputState)
     }
 
-    let success = hid.sendOutputReport(report)
-
-    if !success {
+    do {
+        try transport.sendOutputReport(report)
+    } catch {
         if json {
             print("{\"command\":\"rumble\",\"success\":false}")
         } else {
-            fputs("Error: Failed to send rumble output report\n", stderr)
+            fputs("Error: \(error.localizedDescription)\n", stderr)
         }
-        hid.close()
+        transport.disconnect()
         exit(2)
     }
 
@@ -293,7 +305,7 @@ func runRumble(heavy: UInt8, light: UInt8, json: Bool) {
         } else {
             stopReport = DS4OutputReportBuilder.buildUSB(stopState)
         }
-        hid.sendOutputReport(stopReport)
+        _ = try? transport.sendOutputReport(stopReport)
 
         if json {
             let result: [String: Any] = [
@@ -312,7 +324,7 @@ func runRumble(heavy: UInt8, light: UInt8, json: Bool) {
             print("Rumble stopped.")
         }
 
-        hid.close()
+        transport.disconnect()
         exit(0)
     }
     RunLoop.current.add(stopTimer, forMode: .default)
@@ -322,15 +334,11 @@ func runRumble(heavy: UInt8, light: UInt8, json: Bool) {
 // MARK: - Capture Command
 
 func runCapture(count: Int, outputDir: String, json: Bool) {
-    let hid = DS4HIDManager()
-    guard let info = hid.open() else {
-        fputs("Error: No DualShock 4 controller found\n", stderr)
-        exit(1)
-    }
+    let (transport, info) = openTransport()
 
     // For Bluetooth, trigger extended mode
     if info.connectionType == .bluetooth {
-        _ = hid.readFeatureReport(reportID: DS4ReportID.calibrationUSB, length: DS4ReportSize.calibration)
+        _ = transport.readFeatureReport(reportID: DS4ReportID.calibrationUSB, length: DS4ReportSize.calibration)
     }
 
     // Ensure output directory exists
@@ -351,7 +359,9 @@ func runCapture(count: Int, outputDir: String, json: Bool) {
     var captured = 0
     var filenames: [String] = []
 
-    hid.startInputReportPolling { reportBytes in
+    transport.onEvent = { event in
+        guard case .inputReport(let reportBytes) = event else { return }
+
         // Skip reduced BT reports
         if reportBytes.count < 20 { return }
 
@@ -389,15 +399,16 @@ func runCapture(count: Int, outputDir: String, json: Bool) {
             } else {
                 print("Capture complete: \(captured) reports saved to '\(outputDir)'")
             }
-            hid.close()
+            transport.disconnect()
             exit(0)
         }
     }
+    transport.startInputReportPolling()
 
     // Safety timeout: 30 seconds max for capture
     let safetyTimeout = Timer(timeInterval: 30.0, repeats: false) { _ in
         fputs("Warning: Capture timed out after 30 seconds (\(captured)/\(count) reports captured)\n", stderr)
-        hid.close()
+        transport.disconnect()
         exit(captured > 0 ? 0 : 1)
     }
     RunLoop.current.add(safetyTimeout, forMode: .default)
