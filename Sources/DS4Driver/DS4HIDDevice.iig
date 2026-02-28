@@ -41,17 +41,18 @@ public:
 
     // USB interrupt IN completion callback — called when an input report arrives.
     // TYPE() macro generates the dispatch glue for async I/O completion.
+    // Signature must match IOUSBHostPipe::CompleteAsyncIO exactly (4 params).
     virtual void inputReportComplete(OSAction    * action,
                                       IOReturn     status,
-                                      uint32_t     actualByteCount)
+                                      uint32_t     actualByteCount,
+                                      uint64_t     completionTimestamp)
                      TYPE(IOUSBHostPipe::CompleteAsyncIO);
 
-private:
-    // Internal methods
-    kern_return_t configureDevice();
-    kern_return_t startInputPolling();
-    void          processInputReport(const uint8_t * data, uint32_t length);
-    kern_return_t sendOutputReport(const uint8_t * data, uint32_t length);
+    // Internal methods — LOCALONLY means they are not exported for IPC dispatch
+    virtual kern_return_t configureDevice() LOCALONLY;
+    virtual kern_return_t startInputPolling() LOCALONLY;
+    virtual void          processInputReport(const uint8_t * data, uint32_t length) LOCALONLY;
+    virtual kern_return_t sendOutputReport(const uint8_t * data, uint32_t length) LOCALONLY;
 };
 
 #endif /* DS4HIDDevice_h */

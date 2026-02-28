@@ -52,10 +52,8 @@ targets:
         embed: true
         # Dext embeds in Contents/Library/SystemExtensions/
         codeSign: true
-      - framework: SystemExtensions.framework
-        implicit: true
-      - framework: IOKit.framework
-        implicit: true
+      - sdk: SystemExtensions.framework
+      - sdk: IOKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ds4mac.app
@@ -87,12 +85,14 @@ targets:
         PRODUCT_NAME: com.ds4mac.driver.DS4Driver
         INFOPLIST_FILE: Sources/DS4Driver/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/DS4Driver/DS4Driver.entitlements
-        # DriverKit-specific build settings
-        SYSTEM_EXTENSION_API_USAGE: YES
+        # Override SDK to DriverKit (xcodegen defaults to macosx for macOS platform)
+        SDKROOT: driverkit
+        SUPPORTED_PLATFORMS: driverkit
         DRIVERKIT_DEPLOYMENT_TARGET: "23.0"
         # C++ standard for DriverKit
         CLANG_CXX_LANGUAGE_STANDARD: c++20
-        # IIG tool integration (Xcode provides this for dext targets)
+        # DriverKit targets use a different runtime
+        CODE_SIGN_IDENTITY: "-"
         # Header search paths for DriverKit SDK
         HEADER_SEARCH_PATHS:
           - "$(SDKROOT)/System/DriverKit/System/Library/Frameworks/DriverKit.framework/Headers"

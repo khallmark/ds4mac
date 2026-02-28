@@ -94,14 +94,20 @@ static kern_return_t sGetInputState(OSObject * target, void * reference,
                                       IOUserClientMethodArguments * arguments)
 {
     // Return input state as struct output
-    if (!arguments->structureOutput || arguments->structureOutputSize < sizeof(DS4InputState)) {
+    if (arguments->structureOutputMaximumSize < sizeof(DS4InputState)) {
         return kIOReturnBadArgument;
     }
 
     // TODO: Copy current input state from DS4HIDDevice
     DS4InputState state;
     ds4_input_state_init(&state);
-    memcpy(arguments->structureOutput->getBytesNoCopy(), &state, sizeof(DS4InputState));
+
+    // Create OSData with the state bytes and assign to structureOutput
+    auto data = OSData::withBytes(&state, sizeof(DS4InputState));
+    if (!data) {
+        return kIOReturnNoMemory;
+    }
+    arguments->structureOutput = data;
 
     return kIOReturnSuccess;
 }
@@ -181,9 +187,9 @@ bool DS4UserClient::init()
     return true;
 }
 
-kern_return_t DS4UserClient::Start(IOService * provider)
+kern_return_t DS4UserClient::Start_Impl(IOService * provider)
 {
-    kern_return_t ret = super::Start(provider);
+    kern_return_t ret = Start(provider, SUPERDISPATCH);
     if (ret != kIOReturnSuccess) {
         return ret;
     }
@@ -200,11 +206,11 @@ kern_return_t DS4UserClient::Start(IOService * provider)
     return kIOReturnSuccess;
 }
 
-kern_return_t DS4UserClient::Stop(IOService * provider)
+kern_return_t DS4UserClient::Stop_Impl(IOService * provider)
 {
     os_log(OS_LOG_DEFAULT, LOG_PREFIX "UserClient stopping");
     OSSafeReleaseNULL(ivars->device);
-    return super::Stop(provider);
+    return Stop(provider, SUPERDISPATCH);
 }
 
 void DS4UserClient::free()

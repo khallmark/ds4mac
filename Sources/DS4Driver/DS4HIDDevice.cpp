@@ -19,6 +19,7 @@
 #include <USBDriverKit/IOUSBHostDevice.h>
 #include <USBDriverKit/IOUSBHostInterface.h>
 #include <USBDriverKit/IOUSBHostPipe.h>
+#include <USBDriverKit/AppleUSBDescriptorParsing.h>
 
 #include <HIDDriverKit/IOUserHIDDevice.h>
 #include <HIDDriverKit/HIDDriverKit.h>
@@ -65,11 +66,11 @@ bool DS4HIDDevice::init()
     return true;
 }
 
-kern_return_t DS4HIDDevice::Start(IOService * provider)
+kern_return_t DS4HIDDevice::Start_Impl(IOService * provider)
 {
     kern_return_t ret;
 
-    ret = super::Start(provider);
+    ret = Start(provider, SUPERDISPATCH);
     if (ret != kIOReturnSuccess) {
         os_log(OS_LOG_DEFAULT, LOG_PREFIX "super::Start failed: 0x%x", ret);
         return ret;
@@ -82,12 +83,6 @@ kern_return_t DS4HIDDevice::Start(IOService * provider)
         return kIOReturnNoDevice;
     }
     ivars->interface->retain();
-
-    // Read product ID from the parent USB device for model identification
-    OSNumber * pidNum = nullptr;
-    ret = ivars->interface->CopyProperties(nullptr); // Ensure properties are populated
-    // Product ID comes from the IOUSBHostDevice parent via the matching dict
-    // We'll determine V1 vs V2 from the IOKitPersonality match
 
     // Configure USB endpoints and start polling
     ret = configureDevice();
@@ -109,13 +104,13 @@ kern_return_t DS4HIDDevice::Start(IOService * provider)
     return kIOReturnSuccess;
 }
 
-kern_return_t DS4HIDDevice::Stop(IOService * provider)
+kern_return_t DS4HIDDevice::Stop_Impl(IOService * provider)
 {
     os_log(OS_LOG_DEFAULT, LOG_PREFIX "DualShock 4 driver stopping");
 
     // Cancel any pending async I/O
     if (ivars->inPipe) {
-        ivars->inPipe->AbortAsync(kIOReturnAborted);
+        ivars->inPipe->Abort(0, kIOReturnAborted, nullptr);
     }
 
     // Release resources
@@ -126,7 +121,7 @@ kern_return_t DS4HIDDevice::Stop(IOService * provider)
     OSSafeReleaseNULL(ivars->outPipe);
     OSSafeReleaseNULL(ivars->interface);
 
-    return super::Stop(provider);
+    return Stop(provider, SUPERDISPATCH);
 }
 
 void DS4HIDDevice::free()
@@ -183,20 +178,39 @@ kern_return_t DS4HIDDevice::configureDevice()
         return ret;
     }
 
-    // Iterate endpoints to find interrupt IN and OUT pipes.
+    // Get the configuration and interface descriptors to find endpoints.
     // DS4 USB interface 0 has:
     //   - Endpoint 0x84 (IN, interrupt)  — input reports at ~250 Hz
     //   - Endpoint 0x03 (OUT, interrupt) — output reports (LED, rumble)
-    const IOUSBHostInterface::tPipePolicy * policy = nullptr;
+    const IOUSBConfigurationDescriptor * configDesc =
+        ivars->interface->CopyConfigurationDescriptor();
+    if (!configDesc) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to get configuration descriptor");
+        return kIOReturnNotFound;
+    }
 
-    // Get the endpoint descriptors from the interface
-    const IOUSBEndpointDescriptor * epDesc = nullptr;
+    const IOUSBInterfaceDescriptor * ifaceDesc =
+        ivars->interface->GetInterfaceDescriptor(configDesc);
+    if (!ifaceDesc) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to get interface descriptor");
+        IOFree(const_cast<IOUSBConfigurationDescriptor *>(configDesc),
+               configDesc->wTotalLength);
+        return kIOReturnNotFound;
+    }
+
+    // Iterate endpoint descriptors within this interface
+    const IOUSBDescriptorHeader * current = nullptr;
     while (true) {
-        ret = ivars->interface->CopyPipeDescriptor(epDesc, &epDesc);
-        if (ret != kIOReturnSuccess || !epDesc) {
+        current = IOUSBGetNextAssociatedDescriptorWithType(
+            configDesc,
+            reinterpret_cast<const IOUSBDescriptorHeader *>(ifaceDesc),
+            current,
+            kIOUSBDescriptorTypeEndpoint);
+        if (!current) {
             break;
         }
 
+        auto epDesc = reinterpret_cast<const IOUSBEndpointDescriptor *>(current);
         uint8_t epAddr = epDesc->bEndpointAddress;
         uint8_t epDir  = epAddr & 0x80;  // bit 7: 1=IN, 0=OUT
         uint8_t epType = epDesc->bmAttributes & 0x03;  // bits 1:0
@@ -217,6 +231,9 @@ kern_return_t DS4HIDDevice::configureDevice()
             }
         }
     }
+
+    IOFree(const_cast<IOUSBConfigurationDescriptor *>(configDesc),
+           configDesc->wTotalLength);
 
     if (!ivars->inPipe) {
         os_log(OS_LOG_DEFAULT, LOG_PREFIX "No interrupt IN pipe found");
@@ -257,8 +274,10 @@ kern_return_t DS4HIDDevice::startInputPolling()
 {
     kern_return_t ret;
 
-    // Create the completion action for async reads
-    ret = CreateActionInputReportComplete(
+    // Create the completion action for async reads.
+    // IIG generates CreateActioninputReportComplete (lowercase 'i') from the
+    // method name inputReportComplete declared in the .iig file.
+    ret = CreateActioninputReportComplete(
         sizeof(void *),  // action size
         &ivars->inputAction
     );
@@ -285,9 +304,10 @@ kern_return_t DS4HIDDevice::startInputPolling()
 
 // MARK: - Input Report Completion Callback
 
-void DS4HIDDevice::inputReportComplete(OSAction * action,
-                                         IOReturn   status,
-                                         uint32_t   actualByteCount)
+void DS4HIDDevice::inputReportComplete_Impl(OSAction * action,
+                                              IOReturn   status,
+                                              uint32_t   actualByteCount,
+                                              uint64_t   completionTimestamp)
 {
     if (status != kIOReturnSuccess) {
         if (status == kIOReturnAborted) {
@@ -300,31 +320,20 @@ void DS4HIDDevice::inputReportComplete(OSAction * action,
     }
 
     if (actualByteCount >= DS4_USB_INPUT_REPORT_SIZE && ivars->inBuffer) {
-        // Map the buffer to access the raw bytes
-        IOMemoryMap * map = nullptr;
-        uint64_t address = 0;
-        uint64_t length  = 0;
+        // Access the buffer bytes directly via GetAddressRange
+        IOAddressSegment range = {};
+        kern_return_t ret = ivars->inBuffer->GetAddressRange(&range);
 
-        kern_return_t ret = ivars->inBuffer->Map(0, 0, 0, 0, &map);
-        if (ret == kIOReturnSuccess && map) {
-            address = map->GetAddress();
-            length  = map->GetLength();
+        if (ret == kIOReturnSuccess && range.address && range.length >= DS4_USB_INPUT_REPORT_SIZE) {
+            const uint8_t * data = reinterpret_cast<const uint8_t *>(range.address);
+            processInputReport(data, static_cast<uint32_t>(range.length));
 
-            if (address && length >= DS4_USB_INPUT_REPORT_SIZE) {
-                const uint8_t * data = reinterpret_cast<const uint8_t *>(address);
-                processInputReport(data, (uint32_t)length);
-
-                // Forward the raw report to IOHIDFamily so GCController sees it
-                uint64_t timestamp = 0;
-                clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
-                handleReport(timestamp,
-                             ivars->inBuffer,
-                             static_cast<uint32_t>(length),
-                             kIOHIDReportTypeInput,
-                             0);  // options
-            }
-
-            map->release();
+            // Forward the raw report to IOHIDFamily so GCController sees it
+            handleReport(completionTimestamp,
+                         ivars->inBuffer,
+                         static_cast<uint32_t>(range.length),
+                         kIOHIDReportTypeInput,
+                         0);
         }
     }
 
@@ -359,18 +368,14 @@ kern_return_t DS4HIDDevice::sendOutputReport(const uint8_t * data, uint32_t leng
     uint32_t writeLen = (length < DS4_USB_OUTPUT_REPORT_SIZE)
                           ? length : DS4_USB_OUTPUT_REPORT_SIZE;
 
-    // Map output buffer and copy the report data
-    IOMemoryMap * map = nullptr;
-    kern_return_t ret = ivars->outBuffer->Map(0, 0, 0, 0, &map);
-    if (ret != kIOReturnSuccess || !map) {
+    // Access output buffer directly via GetAddressRange and copy report data
+    IOAddressSegment range = {};
+    kern_return_t ret = ivars->outBuffer->GetAddressRange(&range);
+    if (ret != kIOReturnSuccess || !range.address) {
         return ret;
     }
 
-    uint64_t address = map->GetAddress();
-    if (address) {
-        memcpy(reinterpret_cast<void *>(address), data, writeLen);
-    }
-    map->release();
+    memcpy(reinterpret_cast<void *>(range.address), data, writeLen);
 
     // Send synchronously via the interrupt OUT pipe
     uint32_t bytesTransferred = 0;
@@ -402,7 +407,7 @@ kern_return_t DS4HIDDevice::setReport(IOMemoryDescriptor * report,
                                         OSAction           * action)
 {
     if (reportType == kIOHIDReportTypeOutput && report) {
-        // For output reports, build the DS4 output report and send it
+        // For output reports, map the descriptor to read the bytes
         IOMemoryMap * map = nullptr;
         kern_return_t ret = report->CreateMapping(0, 0, 0, 0, 0, &map);
         if (ret == kIOReturnSuccess && map) {
@@ -410,7 +415,7 @@ kern_return_t DS4HIDDevice::setReport(IOMemoryDescriptor * report,
             uint64_t length  = map->GetLength();
             if (address && length > 0) {
                 const uint8_t * data = reinterpret_cast<const uint8_t *>(address);
-                sendOutputReport(data, (uint32_t)length);
+                sendOutputReport(data, static_cast<uint32_t>(length));
             }
             map->release();
         }

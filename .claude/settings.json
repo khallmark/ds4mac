@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(xcodegen generate:*)"
     ]
   }
 }

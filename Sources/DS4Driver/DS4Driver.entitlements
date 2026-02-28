@@ -1,43 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-    <!-- DriverKit base entitlement -->
-    <key>com.apple.developer.driverkit</key>
-    <true/>
-
-    <!-- Allow the dext to provide HID device services -->
-    <key>com.apple.developer.driverkit.family.hid.device</key>
-    <true/>
-
-    <!-- Allow the dext to provide HID event services -->
-    <key>com.apple.developer.driverkit.family.hid.eventservice</key>
-    <true/>
-
-    <!-- Allow matching on USB transport with specific VID/PID pairs -->
-    <key>com.apple.developer.driverkit.transport.usb</key>
-    <array>
-        <!-- Sony Corp. DS4 V1: VID 0x054C, PID 0x05C4 -->
-        <dict>
-            <key>idVendor</key>
-            <integer>1356</integer>
-            <key>idProduct</key>
-            <integer>1476</integer>
-        </dict>
-        <!-- Sony Corp. DS4 V2: VID 0x054C, PID 0x09CC -->
-        <dict>
-            <key>idVendor</key>
-            <integer>1356</integer>
-            <key>idProduct</key>
-            <integer>2508</integer>
-        </dict>
-    </array>
-
-    <!-- Allow the companion app to communicate with this dext -->
-    <key>com.apple.developer.driverkit.userclient-access</key>
-    <array>
-        <string>com.ds4mac.app</string>
-    </array>
-</dict>
+<dict/>
 </plist>
