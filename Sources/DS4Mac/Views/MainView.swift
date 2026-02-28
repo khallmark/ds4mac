@@ -27,7 +27,7 @@ struct MainView: View {
         }
     }
 
-    @EnvironmentObject var manager: DS4TransportManager
+    @Environment(DS4TransportManager.self) var manager
     @State private var inspectorTab: InspectorTab = .status
 
     var body: some View {

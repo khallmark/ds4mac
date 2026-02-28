@@ -4,7 +4,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @EnvironmentObject var extensionManager: ExtensionManager
+    @Environment(ExtensionManager.self) var extensionManager
     @AppStorage("autoConnect") private var autoConnect = false
     @AppStorage("useFallbackTransport") private var useFallbackTransport = false
 

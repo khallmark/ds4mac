@@ -1,4 +1,4 @@
-// DS4TransportManagerTests.swift — Test the ObservableObject bridge using DS4MockTransport
+// DS4TransportManagerTests.swift — Test the @Observable manager using DS4MockTransport
 
 import XCTest
 @testable import DS4Transport

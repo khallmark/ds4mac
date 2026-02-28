@@ -7,14 +7,14 @@ import DS4Transport
 
 @main
 struct DS4MacApp: App {
-    @StateObject private var manager = DS4TransportManager(transport: DS4USBTransport())
-    @StateObject private var extensionManager = ExtensionManager()
+    @State private var manager = DS4TransportManager(transport: DS4USBTransport())
+    @State private var extensionManager = ExtensionManager()
 
     var body: some Scene {
         WindowGroup {
             MainView()
-                .environmentObject(manager)
-                .environmentObject(extensionManager)
+                .environment(manager)
+                .environment(extensionManager)
         }
     }
 }

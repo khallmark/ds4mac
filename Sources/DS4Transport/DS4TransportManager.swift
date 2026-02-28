@@ -1,14 +1,15 @@
 // DS4TransportManager.swift — High-level controller connection manager for SwiftUI
-// Bridges DS4TransportProtocol callbacks to Combine @Published properties.
+// Bridges DS4TransportProtocol to SwiftUI via @Observable property-level tracking.
 
 import Foundation
-import Combine
+import Observation
 import DS4Protocol
 
 /// Manages a DS4 controller connection and provides observable state for SwiftUI.
 ///
 /// This is the primary interface the companion app uses. It wraps a `DS4TransportProtocol`
-/// implementation and publishes state changes via `@Published` properties.
+/// implementation and publishes state changes via `@Observable` tracked properties.
+/// SwiftUI views only re-render when properties they actually read change.
 ///
 /// Usage:
 /// ```swift
@@ -17,24 +18,25 @@ import DS4Protocol
 /// // Observe manager.inputState, manager.connectionState, etc.
 /// ```
 @MainActor
-public final class DS4TransportManager: ObservableObject {
+@Observable
+public final class DS4TransportManager {
 
-    // MARK: - Published State
+    // MARK: - Observable State
 
     /// Current connection state.
-    @Published public private(set) var connectionState: ConnectionState = .disconnected
+    public private(set) var connectionState: ConnectionState = .disconnected
 
     /// Latest parsed input state from the controller.
-    @Published public private(set) var inputState: DS4InputState = DS4InputState()
+    public private(set) var inputState: DS4InputState = DS4InputState()
 
     /// Connected device info.
-    @Published public private(set) var deviceInfo: DS4DeviceInfo?
+    public private(set) var deviceInfo: DS4DeviceInfo?
 
     /// Last output state sent to the controller (LED color, rumble).
-    @Published public private(set) var outputState: DS4OutputState = DS4OutputState()
+    public private(set) var outputState: DS4OutputState = DS4OutputState()
 
     /// Error message, if any.
-    @Published public private(set) var lastError: String?
+    public private(set) var lastError: String?
 
     public enum ConnectionState: Equatable, Sendable {
         case disconnected
@@ -58,16 +60,12 @@ public final class DS4TransportManager: ObservableObject {
 
     /// Flag set from transport callback, read by timer to avoid unnecessary Task allocation.
     /// Deliberately nonisolated — racy reads are acceptable (the authoritative check is in flushPendingState).
+    @ObservationIgnored
     nonisolated(unsafe) private var hasPendingState: Bool = false
 
     public init(transport: DS4TransportProtocol) {
         self.transport = transport
         setupTransportCallbacks()
-    }
-
-    deinit {
-        displayTimer?.invalidate()
-        transport.onEvent = nil
     }
 
     // MARK: - Public API

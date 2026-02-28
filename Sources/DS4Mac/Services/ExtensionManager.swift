@@ -3,12 +3,14 @@
 // Reference: docs/10-macOS-Driver-Architecture.md Section 7.3
 
 import Foundation
+import Observation
 import SystemExtensions
 
 /// Manages the DS4Driver DriverKit system extension lifecycle.
 /// Provides activation/deactivation and tracks the current extension state.
 @MainActor
-final class ExtensionManager: NSObject, ObservableObject {
+@Observable
+final class ExtensionManager: NSObject {
 
     /// Current state of the system extension.
     enum ExtensionState: String {
@@ -25,8 +27,8 @@ final class ExtensionManager: NSObject, ObservableObject {
     /// Must match the CFBundleIdentifier in DS4Driver/Info.plist.
     static let dextIdentifier = "com.ds4mac.driver.DS4Driver"
 
-    @Published private(set) var state: ExtensionState = .unknown
-    @Published private(set) var lastError: String?
+    private(set) var state: ExtensionState = .unknown
+    private(set) var lastError: String?
 
     /// Request activation of the DS4Driver system extension.
     /// macOS will prompt the user to approve in System Settings.

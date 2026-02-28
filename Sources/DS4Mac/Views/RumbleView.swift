@@ -5,7 +5,7 @@ import DS4Protocol
 import DS4Transport
 
 struct RumbleView: View {
-    @EnvironmentObject var manager: DS4TransportManager
+    @Environment(DS4TransportManager.self) var manager
 
     @State private var heavy: Double = 0
     @State private var light: Double = 0

@@ -6,7 +6,7 @@ import DS4Protocol
 import DS4Transport
 
 struct ControllerVisualizationView: View {
-    @EnvironmentObject var manager: DS4TransportManager
+    @Environment(DS4TransportManager.self) var manager
 
     var body: some View {
         controllerBody

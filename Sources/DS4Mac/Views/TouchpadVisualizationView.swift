@@ -6,7 +6,7 @@ import DS4Protocol
 import DS4Transport
 
 struct TouchpadVisualizationView: View {
-    @EnvironmentObject var manager: DS4TransportManager
+    @Environment(DS4TransportManager.self) var manager
 
     // DS4 touchpad resolution
     private let touchMaxX: CGFloat = 1920

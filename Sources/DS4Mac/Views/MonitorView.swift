@@ -6,7 +6,7 @@ import DS4Protocol
 import DS4Transport
 
 struct MonitorView: View {
-    @EnvironmentObject var manager: DS4TransportManager
+    @Environment(DS4TransportManager.self) var manager
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

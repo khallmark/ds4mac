@@ -5,7 +5,7 @@ import DS4Protocol
 import DS4Transport
 
 struct LightBarView: View {
-    @EnvironmentObject var manager: DS4TransportManager
+    @Environment(DS4TransportManager.self) var manager
 
     @State private var red: Double = 0
     @State private var green: Double = 0
