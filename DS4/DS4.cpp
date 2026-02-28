@@ -1,6 +1,4 @@
 #include <IOKit/IOLib.h>
-#include <IOKit/usb/IOUSBDevice.h>
-#include <IOKit/usb/IOUSBInterface.h>
 
 namespace HID_DS4 {
 	#include "dualshock4hid.h"

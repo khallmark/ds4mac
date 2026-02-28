@@ -1,0 +1,107 @@
+# project.yml — XcodeGen project specification for DS4Mac
+# Generates DS4Mac.xcodeproj with DriverKit dext + companion app targets.
+#
+# Usage:
+#   brew install xcodegen   (if not installed)
+#   xcodegen generate       (creates DS4Mac.xcodeproj)
+#
+# This hybrid approach keeps DS4Protocol and DS4Transport as SPM packages
+# (built/tested via `swift build`/`swift test`) and adds Xcode-native targets
+# only for the dext (C++, requires IIG tool) and the app (must embed the dext).
+#
+# Reference: docs/10-macOS-Driver-Architecture.md Section 6
+
+name: DS4Mac
+options:
+  bundleIdPrefix: com.ds4mac
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+packages:
+  # Reference the local SPM packages for the companion app
+  DS4Protocol:
+    path: .
+  DS4Transport:
+    path: .
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+targets:
+
+  # ────────────────────────────────────────────────
+  # DS4Mac — macOS Companion Application (Swift)
+  # ────────────────────────────────────────────────
+  DS4Mac:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/DS4Mac
+        type: group
+    dependencies:
+      - package: DS4Protocol
+        product: DS4Protocol
+      - package: DS4Transport
+        product: DS4Transport
+      - target: DS4Driver
+        embed: true
+        # Dext embeds in Contents/Library/SystemExtensions/
+        codeSign: true
+      - framework: SystemExtensions.framework
+        implicit: true
+      - framework: IOKit.framework
+        implicit: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ds4mac.app
+        PRODUCT_NAME: DS4Mac
+        INFOPLIST_FILE: Sources/DS4Mac/Info.plist
+        CODE_SIGN_ENTITLEMENTS: DS4Mac.entitlements
+        # Enable SystemExtensions framework usage
+        SYSTEM_EXTENSION_API_USAGE: YES
+        # Required for embedding dexts
+        COPY_PHASE_STRIP: NO
+    entitlements:
+      path: DS4Mac.entitlements
+
+  # ────────────────────────────────────────────────
+  # DS4Driver — DriverKit System Extension (C++)
+  # ────────────────────────────────────────────────
+  DS4Driver:
+    type: driver-extension
+    platform: macOS
+    sources:
+      - path: Sources/DS4Driver
+        type: group
+        excludes:
+          - "*.entitlements"
+          - "Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ds4mac.driver.DS4Driver
+        PRODUCT_NAME: com.ds4mac.driver.DS4Driver
+        INFOPLIST_FILE: Sources/DS4Driver/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/DS4Driver/DS4Driver.entitlements
+        # DriverKit-specific build settings
+        SYSTEM_EXTENSION_API_USAGE: YES
+        DRIVERKIT_DEPLOYMENT_TARGET: "23.0"
+        # C++ standard for DriverKit
+        CLANG_CXX_LANGUAGE_STANDARD: c++20
+        # IIG tool integration (Xcode provides this for dext targets)
+        # Header search paths for DriverKit SDK
+        HEADER_SEARCH_PATHS:
+          - "$(SDKROOT)/System/DriverKit/System/Library/Frameworks/DriverKit.framework/Headers"
+          - "$(SDKROOT)/System/DriverKit/System/Library/Frameworks/HIDDriverKit.framework/Headers"
+          - "$(SDKROOT)/System/DriverKit/System/Library/Frameworks/USBDriverKit.framework/Headers"
+        # Link against DriverKit frameworks
+        OTHER_LDFLAGS:
+          - "-framework DriverKit"
+          - "-framework HIDDriverKit"
+          - "-framework USBDriverKit"
+    entitlements:
+      path: Sources/DS4Driver/DS4Driver.entitlements

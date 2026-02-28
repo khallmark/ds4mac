@@ -1,4 +1,3 @@
-#include <IOKit/usb/IOUSBDevice.h>
 #include <IOKit/hid/IOHIDDevice.h>
 
 class SonyPlaystationDualShock4 : public IOHIDDevice
@@ -6,13 +5,14 @@ class SonyPlaystationDualShock4 : public IOHIDDevice
 	OSDeclareDefaultStructors(SonyPlaystationDualShock4)
 	
 public:
-	virtual bool init(OSDictionary *dictionary = 0);
-	virtual void free(void);
-	virtual IOService *probe(IOService *provider, SInt32 *score);
-	virtual bool start(IOService *provider);
-	virtual void stop(IOService *provider);
+	virtual bool init(OSDictionary *dictionary = 0) override;
+	virtual void free(void) override;
+	virtual IOService *probe(IOService *provider, SInt32 *score) override;
+	virtual bool start(IOService *provider) override;
+	virtual void stop(IOService *provider) override;
 	
 	
 	
-	virtual IOReturn newReportDescriptor(IOMemoryDescriptor **descriptor) const;
+	virtual IOReturn newReportDescriptor(IOMemoryDescriptor **descriptor) const override;
 };
+

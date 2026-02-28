@@ -1,0 +1,11 @@
+---
+description: TypeScript import and module structure constraints
+globs: **/*.ts,**/*.tsx
+alwaysApply: false
+---
+
+# TypeScript Import and Structure Constraints
+
+- Never use `await import(...)` dynamic import syntax.
+- Keep imports at the top of the file; do not place imports inline inside functions or blocks.
+- Never create barrel files (for example `index.ts` files that only re-export modules).

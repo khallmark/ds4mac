@@ -1,0 +1,57 @@
+// DS4HIDDevice.iig — DriverKit IOUserHIDDevice subclass interface for DualShock 4
+// This is the main driver class that matches against DS4 USB devices,
+// reads input reports, and publishes a HID device to IOHIDFamily.
+//
+// Matching: IOUSBHostInterface with Sony VID (0x054C) and DS4 PIDs.
+// The IOKitPersonalities in Info.plist trigger instantiation.
+
+#ifndef DS4HIDDevice_h
+#define DS4HIDDevice_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+#include <HIDDriverKit/IOUserHIDDevice.iig>
+#include <USBDriverKit/IOUSBHostPipe.iig>
+
+class DS4HIDDevice : public IOUserHIDDevice
+{
+public:
+    // Lifecycle
+    virtual bool init() override;
+    virtual kern_return_t Start(IOService * provider) override;
+    virtual kern_return_t Stop(IOService * provider) override;
+    virtual void free() override;
+
+    // HID Device Provider — called by IOHIDFamily to get device metadata
+    virtual OSDictionary * newDeviceDescription() override;
+    virtual OSData * newReportDescriptor() override;
+
+    // Report handling — intercept reports flowing through the HID subsystem
+    virtual kern_return_t getReport(IOMemoryDescriptor      * report,
+                                     IOHIDReportType          reportType,
+                                     IOOptionBits             options,
+                                     uint32_t                 completionTimeout,
+                                     OSAction               * action) override;
+
+    virtual kern_return_t setReport(IOMemoryDescriptor      * report,
+                                     IOHIDReportType          reportType,
+                                     IOOptionBits             options,
+                                     uint32_t                 completionTimeout,
+                                     OSAction               * action) override;
+
+    // USB interrupt IN completion callback — called when an input report arrives.
+    // TYPE() macro generates the dispatch glue for async I/O completion.
+    virtual void inputReportComplete(OSAction    * action,
+                                      IOReturn     status,
+                                      uint32_t     actualByteCount)
+                     TYPE(IOUSBHostPipe::CompleteAsyncIO);
+
+private:
+    // Internal methods
+    kern_return_t configureDevice();
+    kern_return_t startInputPolling();
+    void          processInputReport(const uint8_t * data, uint32_t length);
+    kern_return_t sendOutputReport(const uint8_t * data, uint32_t length);
+};
+
+#endif /* DS4HIDDevice_h */

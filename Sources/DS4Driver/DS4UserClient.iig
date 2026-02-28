@@ -1,0 +1,34 @@
+// DS4UserClient.iig — IOUserClient subclass for DS4Mac companion app communication
+// Provides external methods for the companion app to control LED, rumble,
+// and query controller state via IOConnectCallMethod().
+//
+// External Method Selectors:
+//   0 = setLightBar(r, g, b)       — App → Dext
+//   1 = setRumble(heavy, light)    — App → Dext
+//   2 = getInputState()            — Dext → App
+//   3 = getBatteryState()          — Dext → App
+
+#ifndef DS4UserClient_h
+#define DS4UserClient_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+#include <DriverKit/IOUserClient.iig>
+
+class DS4UserClient : public IOUserClient
+{
+public:
+    virtual bool init() override;
+    virtual kern_return_t Start(IOService * provider) override;
+    virtual kern_return_t Stop(IOService * provider) override;
+    virtual void free() override;
+
+    // Dispatch table for external methods called from user space
+    virtual kern_return_t ExternalMethod(uint64_t              selector,
+                                          IOUserClientMethodArguments * arguments,
+                                          const IOUserClientMethodDispatch * dispatch,
+                                          OSObject             * target,
+                                          void                 * reference) override;
+};
+
+#endif /* DS4UserClient_h */

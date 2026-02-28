@@ -11,7 +11,7 @@ let package = Package(
         .executable(name: "DS4Mac", targets: ["DS4Mac"]),
     ],
     targets: [
-        .target(
+        .target( 
             name: "DS4Protocol",
             path: "Sources/DS4Protocol"
         ),

@@ -1,0 +1,421 @@
+// DS4HIDDevice.cpp — DriverKit DualShock 4 HID device implementation
+// This driver matches USB DS4 controllers, polls for input reports via
+// interrupt IN pipe, parses them, and forwards to IOHIDFamily so that
+// GameController.framework sees the device as a GCDualShockGamepad.
+//
+// Reference: docs/10-macOS-Driver-Architecture.md Section 3
+//            docs/04-DS4-USB-Protocol.md Section 2.1 (input), Section 3 (output)
+
+#include <os/log.h>
+
+#include <DriverKit/IOLib.h>
+#include <DriverKit/IOMemoryDescriptor.h>
+#include <DriverKit/IOBufferMemoryDescriptor.h>
+#include <DriverKit/OSData.h>
+#include <DriverKit/OSDictionary.h>
+#include <DriverKit/OSNumber.h>
+#include <DriverKit/OSString.h>
+
+#include <USBDriverKit/IOUSBHostDevice.h>
+#include <USBDriverKit/IOUSBHostInterface.h>
+#include <USBDriverKit/IOUSBHostPipe.h>
+
+#include <HIDDriverKit/IOUserHIDDevice.h>
+#include <HIDDriverKit/HIDDriverKit.h>
+
+#include "DS4HIDDevice.h"
+#include "DS4ReportDescriptor.h"
+#include "DS4Protocol.h"
+
+#define LOG_PREFIX "DS4Mac: "
+
+// MARK: - Instance Variables
+
+struct DS4HIDDevice_IVars {
+    IOUSBHostInterface           * interface;
+    IOUSBHostPipe                * inPipe;
+    IOUSBHostPipe                * outPipe;
+    IOBufferMemoryDescriptor     * inBuffer;
+    IOBufferMemoryDescriptor     * outBuffer;
+    OSAction                     * inputAction;
+
+    DS4InputState                  inputState;
+    DS4OutputState                 outputState;
+
+    uint16_t                       productID;
+};
+
+// MARK: - Lifecycle
+
+bool DS4HIDDevice::init()
+{
+    if (!super::init()) {
+        return false;
+    }
+
+    ivars = IONewZero(DS4HIDDevice_IVars, 1);
+    if (!ivars) {
+        return false;
+    }
+
+    ds4_input_state_init(&ivars->inputState);
+    ds4_output_state_init(&ivars->outputState);
+
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "init");
+    return true;
+}
+
+kern_return_t DS4HIDDevice::Start(IOService * provider)
+{
+    kern_return_t ret;
+
+    ret = super::Start(provider);
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "super::Start failed: 0x%x", ret);
+        return ret;
+    }
+
+    // Cast provider to IOUSBHostInterface — this is what our IOKitPersonality matches
+    ivars->interface = OSDynamicCast(IOUSBHostInterface, provider);
+    if (!ivars->interface) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "provider is not IOUSBHostInterface");
+        return kIOReturnNoDevice;
+    }
+    ivars->interface->retain();
+
+    // Read product ID from the parent USB device for model identification
+    OSNumber * pidNum = nullptr;
+    ret = ivars->interface->CopyProperties(nullptr); // Ensure properties are populated
+    // Product ID comes from the IOUSBHostDevice parent via the matching dict
+    // We'll determine V1 vs V2 from the IOKitPersonality match
+
+    // Configure USB endpoints and start polling
+    ret = configureDevice();
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "configureDevice failed: 0x%x", ret);
+        return ret;
+    }
+
+    ret = startInputPolling();
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "startInputPolling failed: 0x%x", ret);
+        return ret;
+    }
+
+    // Register with IOHIDFamily — this makes the DS4 visible as a HID device
+    RegisterService();
+
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "DualShock 4 driver started successfully");
+    return kIOReturnSuccess;
+}
+
+kern_return_t DS4HIDDevice::Stop(IOService * provider)
+{
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "DualShock 4 driver stopping");
+
+    // Cancel any pending async I/O
+    if (ivars->inPipe) {
+        ivars->inPipe->AbortAsync(kIOReturnAborted);
+    }
+
+    // Release resources
+    OSSafeReleaseNULL(ivars->inputAction);
+    OSSafeReleaseNULL(ivars->inBuffer);
+    OSSafeReleaseNULL(ivars->outBuffer);
+    OSSafeReleaseNULL(ivars->inPipe);
+    OSSafeReleaseNULL(ivars->outPipe);
+    OSSafeReleaseNULL(ivars->interface);
+
+    return super::Stop(provider);
+}
+
+void DS4HIDDevice::free()
+{
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "free");
+    IOSafeDeleteNULL(ivars, DS4HIDDevice_IVars, 1);
+    super::free();
+}
+
+// MARK: - HID Device Description
+
+OSDictionary * DS4HIDDevice::newDeviceDescription()
+{
+    auto dict = OSDictionary::withCapacity(8);
+    if (!dict) {
+        return nullptr;
+    }
+
+    // These properties allow IOHIDFamily and GameController.framework to
+    // identify this device as a Sony DualShock 4 (GCDualShockGamepad).
+    auto vendorID  = OSNumber::withNumber(DS4_VENDOR_ID, 32);
+    auto productID = OSNumber::withNumber(DS4_V1_PRODUCT_ID, 32);
+    auto transport = OSString::withCString("USB");
+    auto manufacturer = OSString::withCString("Sony Computer Entertainment");
+    auto product   = OSString::withCString("Wireless Controller");
+
+    if (vendorID)     { dict->setObject("VendorID", vendorID);         vendorID->release(); }
+    if (productID)    { dict->setObject("ProductID", productID);       productID->release(); }
+    if (transport)    { dict->setObject("Transport", transport);       transport->release(); }
+    if (manufacturer) { dict->setObject("Manufacturer", manufacturer); manufacturer->release(); }
+    if (product)      { dict->setObject("Product", product);           product->release(); }
+
+    return dict;
+}
+
+OSData * DS4HIDDevice::newReportDescriptor()
+{
+    // Return the HID report descriptor that describes the DS4 gamepad layout.
+    // This is the same descriptor used by the original hardware, so
+    // GameController.framework recognizes it as GCDualShockGamepad.
+    return OSData::withBytes(DS4ReportDescriptor, DS4ReportDescriptorSize);
+}
+
+// MARK: - USB Configuration
+
+kern_return_t DS4HIDDevice::configureDevice()
+{
+    kern_return_t ret;
+
+    // Open the USB interface for exclusive access
+    ret = ivars->interface->Open(this, 0, nullptr);
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to open interface: 0x%x", ret);
+        return ret;
+    }
+
+    // Iterate endpoints to find interrupt IN and OUT pipes.
+    // DS4 USB interface 0 has:
+    //   - Endpoint 0x84 (IN, interrupt)  — input reports at ~250 Hz
+    //   - Endpoint 0x03 (OUT, interrupt) — output reports (LED, rumble)
+    const IOUSBHostInterface::tPipePolicy * policy = nullptr;
+
+    // Get the endpoint descriptors from the interface
+    const IOUSBEndpointDescriptor * epDesc = nullptr;
+    while (true) {
+        ret = ivars->interface->CopyPipeDescriptor(epDesc, &epDesc);
+        if (ret != kIOReturnSuccess || !epDesc) {
+            break;
+        }
+
+        uint8_t epAddr = epDesc->bEndpointAddress;
+        uint8_t epDir  = epAddr & 0x80;  // bit 7: 1=IN, 0=OUT
+        uint8_t epType = epDesc->bmAttributes & 0x03;  // bits 1:0
+
+        if (epType == kIOUSBEndpointTypeInterrupt) {
+            IOUSBHostPipe * pipe = nullptr;
+            ret = ivars->interface->CopyPipe(epAddr, &pipe);
+            if (ret == kIOReturnSuccess && pipe) {
+                if (epDir) {
+                    // Interrupt IN — input reports
+                    ivars->inPipe = pipe;
+                    os_log(OS_LOG_DEFAULT, LOG_PREFIX "Found interrupt IN pipe: 0x%02x", epAddr);
+                } else {
+                    // Interrupt OUT — output reports
+                    ivars->outPipe = pipe;
+                    os_log(OS_LOG_DEFAULT, LOG_PREFIX "Found interrupt OUT pipe: 0x%02x", epAddr);
+                }
+            }
+        }
+    }
+
+    if (!ivars->inPipe) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "No interrupt IN pipe found");
+        return kIOReturnNotFound;
+    }
+
+    // Allocate input buffer for 64-byte USB reports
+    ret = IOBufferMemoryDescriptor::Create(
+        kIOMemoryDirectionIn,
+        DS4_USB_INPUT_REPORT_SIZE,
+        0,
+        &ivars->inBuffer
+    );
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to create input buffer: 0x%x", ret);
+        return ret;
+    }
+
+    // Allocate output buffer for 32-byte USB output reports
+    ret = IOBufferMemoryDescriptor::Create(
+        kIOMemoryDirectionOut,
+        DS4_USB_OUTPUT_REPORT_SIZE,
+        0,
+        &ivars->outBuffer
+    );
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to create output buffer: 0x%x", ret);
+        return ret;
+    }
+
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "Device configured successfully");
+    return kIOReturnSuccess;
+}
+
+// MARK: - Input Report Polling
+
+kern_return_t DS4HIDDevice::startInputPolling()
+{
+    kern_return_t ret;
+
+    // Create the completion action for async reads
+    ret = CreateActionInputReportComplete(
+        sizeof(void *),  // action size
+        &ivars->inputAction
+    );
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to create input action: 0x%x", ret);
+        return ret;
+    }
+
+    // Schedule the first async read on the interrupt IN pipe
+    ret = ivars->inPipe->AsyncIO(
+        ivars->inBuffer,
+        DS4_USB_INPUT_REPORT_SIZE,
+        ivars->inputAction,
+        0  // no timeout
+    );
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to start async IO: 0x%x", ret);
+        return ret;
+    }
+
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "Input polling started");
+    return kIOReturnSuccess;
+}
+
+// MARK: - Input Report Completion Callback
+
+void DS4HIDDevice::inputReportComplete(OSAction * action,
+                                         IOReturn   status,
+                                         uint32_t   actualByteCount)
+{
+    if (status != kIOReturnSuccess) {
+        if (status == kIOReturnAborted) {
+            // Normal shutdown — don't reschedule
+            os_log(OS_LOG_DEFAULT, LOG_PREFIX "Input polling aborted (shutdown)");
+            return;
+        }
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Input report error: 0x%x", status);
+        // Try to continue polling despite errors
+    }
+
+    if (actualByteCount >= DS4_USB_INPUT_REPORT_SIZE && ivars->inBuffer) {
+        // Map the buffer to access the raw bytes
+        IOMemoryMap * map = nullptr;
+        uint64_t address = 0;
+        uint64_t length  = 0;
+
+        kern_return_t ret = ivars->inBuffer->Map(0, 0, 0, 0, &map);
+        if (ret == kIOReturnSuccess && map) {
+            address = map->GetAddress();
+            length  = map->GetLength();
+
+            if (address && length >= DS4_USB_INPUT_REPORT_SIZE) {
+                const uint8_t * data = reinterpret_cast<const uint8_t *>(address);
+                processInputReport(data, (uint32_t)length);
+
+                // Forward the raw report to IOHIDFamily so GCController sees it
+                uint64_t timestamp = 0;
+                clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
+                handleReport(timestamp,
+                             ivars->inBuffer,
+                             static_cast<uint32_t>(length),
+                             kIOHIDReportTypeInput,
+                             0);  // options
+            }
+
+            map->release();
+        }
+    }
+
+    // Reschedule the next async read to keep polling
+    if (ivars->inPipe && ivars->inBuffer && ivars->inputAction) {
+        kern_return_t ret = ivars->inPipe->AsyncIO(
+            ivars->inBuffer,
+            DS4_USB_INPUT_REPORT_SIZE,
+            ivars->inputAction,
+            0
+        );
+        if (ret != kIOReturnSuccess) {
+            os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to reschedule input: 0x%x", ret);
+        }
+    }
+}
+
+// MARK: - Report Processing
+
+void DS4HIDDevice::processInputReport(const uint8_t * data, uint32_t length)
+{
+    // Parse the USB input report into our internal state struct
+    ds4_parse_usb_input_report(data, length, &ivars->inputState);
+}
+
+kern_return_t DS4HIDDevice::sendOutputReport(const uint8_t * data, uint32_t length)
+{
+    if (!ivars->outPipe || !ivars->outBuffer) {
+        return kIOReturnNotReady;
+    }
+
+    uint32_t writeLen = (length < DS4_USB_OUTPUT_REPORT_SIZE)
+                          ? length : DS4_USB_OUTPUT_REPORT_SIZE;
+
+    // Map output buffer and copy the report data
+    IOMemoryMap * map = nullptr;
+    kern_return_t ret = ivars->outBuffer->Map(0, 0, 0, 0, &map);
+    if (ret != kIOReturnSuccess || !map) {
+        return ret;
+    }
+
+    uint64_t address = map->GetAddress();
+    if (address) {
+        memcpy(reinterpret_cast<void *>(address), data, writeLen);
+    }
+    map->release();
+
+    // Send synchronously via the interrupt OUT pipe
+    uint32_t bytesTransferred = 0;
+    ret = ivars->outPipe->IO(ivars->outBuffer, writeLen, &bytesTransferred, 0);
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Output report failed: 0x%x", ret);
+    }
+
+    return ret;
+}
+
+// MARK: - HID Report Overrides
+
+kern_return_t DS4HIDDevice::getReport(IOMemoryDescriptor * report,
+                                        IOHIDReportType      reportType,
+                                        IOOptionBits         options,
+                                        uint32_t             completionTimeout,
+                                        OSAction           * action)
+{
+    // Forward feature report requests to the USB device
+    // This is used for calibration data (Report ID 0x02), etc.
+    return super::getReport(report, reportType, options, completionTimeout, action);
+}
+
+kern_return_t DS4HIDDevice::setReport(IOMemoryDescriptor * report,
+                                        IOHIDReportType      reportType,
+                                        IOOptionBits         options,
+                                        uint32_t             completionTimeout,
+                                        OSAction           * action)
+{
+    if (reportType == kIOHIDReportTypeOutput && report) {
+        // For output reports, build the DS4 output report and send it
+        IOMemoryMap * map = nullptr;
+        kern_return_t ret = report->CreateMapping(0, 0, 0, 0, 0, &map);
+        if (ret == kIOReturnSuccess && map) {
+            uint64_t address = map->GetAddress();
+            uint64_t length  = map->GetLength();
+            if (address && length > 0) {
+                const uint8_t * data = reinterpret_cast<const uint8_t *>(address);
+                sendOutputReport(data, (uint32_t)length);
+            }
+            map->release();
+        }
+        return kIOReturnSuccess;
+    }
+
+    return super::setReport(report, reportType, options, completionTimeout, action);
+}

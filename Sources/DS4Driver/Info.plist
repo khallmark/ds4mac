@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.ds4mac.driver.DS4Driver</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>DS4Driver</string>
+    <key>CFBundlePackageType</key>
+    <string>DEXT</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <!-- IOKit Matching Personalities -->
+    <key>IOKitPersonalities</key>
+    <dict>
+        <!-- DS4 V1 (CUH-ZCT1x) USB Matching -->
+        <key>DS4_V1_USB</key>
+        <dict>
+            <key>CFBundleIdentifier</key>
+            <string>com.ds4mac.driver.DS4Driver</string>
+            <!-- Kernel-side proxy that bridges to user-space DriverKit -->
+            <key>IOClass</key>
+            <string>AppleUserUSBHostHIDDevice</string>
+            <!-- Match against a USB interface -->
+            <key>IOProviderClass</key>
+            <string>IOUSBHostInterface</string>
+            <!-- DriverKit class to instantiate -->
+            <key>IOUserClass</key>
+            <string>DS4HIDDevice</string>
+            <!-- Bundle ID of the dext -->
+            <key>IOUserServerName</key>
+            <string>com.ds4mac.driver.DS4Driver</string>
+            <!-- Sony Corporation -->
+            <key>idVendor</key>
+            <integer>1356</integer>
+            <!-- DS4 V1 (0x05C4) -->
+            <key>idProduct</key>
+            <integer>1476</integer>
+            <!-- HID interface on the DS4 composite USB device -->
+            <key>bInterfaceNumber</key>
+            <integer>0</integer>
+        </dict>
+
+        <!-- DS4 V2 (CUH-ZCT2x) USB Matching -->
+        <key>DS4_V2_USB</key>
+        <dict>
+            <key>CFBundleIdentifier</key>
+            <string>com.ds4mac.driver.DS4Driver</string>
+            <key>IOClass</key>
+            <string>AppleUserUSBHostHIDDevice</string>
+            <key>IOProviderClass</key>
+            <string>IOUSBHostInterface</string>
+            <key>IOUserClass</key>
+            <string>DS4HIDDevice</string>
+            <key>IOUserServerName</key>
+            <string>com.ds4mac.driver.DS4Driver</string>
+            <!-- Sony Corporation -->
+            <key>idVendor</key>
+            <integer>1356</integer>
+            <!-- DS4 V2 (0x09CC) -->
+            <key>idProduct</key>
+            <integer>2508</integer>
+            <key>bInterfaceNumber</key>
+            <integer>0</integer>
+        </dict>
+    </dict>
+</dict>
+</plist>
