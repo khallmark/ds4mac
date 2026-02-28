@@ -270,6 +270,39 @@ final class DS4InputReportParserTests: XCTestCase {
         XCTAssertEqual(state.touchpad.touch1.x, 1800)
     }
 
+    func testParseTouchpadPacketCountAndCounter() throws {
+        let report = makeUSBReport(touchPacketCount: 1, touchPacketCounter: 42)
+        let state = try DS4InputReportParser.parseUSB(report)
+        XCTAssertEqual(state.touchpad.packetCount, 1)
+        XCTAssertEqual(state.touchpad.packetCounter, 42)
+    }
+
+    func testParseTouchpadFingerWithHighCounter() throws {
+        // Verify that a high packet counter (>= 128) does NOT affect touch0 active state.
+        // This was the root cause of the off-by-one bug: byte 34 (counter) was misread
+        // as touch0's active+ID byte, so counter >= 128 made touch0 appear inactive.
+        let touch = makeTouchFingerBytes(active: true, trackingID: 5, x: 960, y: 471)
+        let report = makeUSBReport(touchPacketCounter: 200, touch0: touch)
+        let state = try DS4InputReportParser.parseUSB(report)
+        XCTAssertTrue(state.touchpad.touch0.active, "touch0 must stay active regardless of packet counter value")
+        XCTAssertEqual(state.touchpad.touch0.trackingID, 5)
+        XCTAssertEqual(state.touchpad.touch0.x, 960)
+        XCTAssertEqual(state.touchpad.touch0.y, 471)
+        XCTAssertEqual(state.touchpad.packetCounter, 200)
+    }
+
+    func testParseTouchpadTouch1InactiveWhenNotTouching() throws {
+        // Verify that touch1 correctly reports inactive when only touch0 is touching.
+        // The off-by-one bug caused touch1 to always appear active because it read
+        // touch0's Y-high byte (always < 128) as touch1's active flag.
+        let t0 = makeTouchFingerBytes(active: true, trackingID: 1, x: 960, y: 471)
+        let t1 = makeTouchFingerBytes(active: false, trackingID: 2, x: 0, y: 0)
+        let report = makeUSBReport(touch0: t0, touch1: t1)
+        let state = try DS4InputReportParser.parseUSB(report)
+        XCTAssertTrue(state.touchpad.touch0.active)
+        XCTAssertFalse(state.touchpad.touch1.active, "touch1 must be inactive when not touching")
+    }
+
     // MARK: - Auto-Detect
 
     func testAutoDetectUSB() throws {

@@ -12,20 +12,19 @@ struct RumbleView: View {
 
     var body: some View {
         VStack(spacing: 20) {
+            motorsSection
+            testSection
+
             if manager.connectionState != .connected {
-                ContentUnavailableView(
-                    "No Controller Connected",
-                    systemImage: "gamecontroller",
-                    description: Text("Connect a DualShock 4 to test rumble motors.")
-                )
-            } else {
-                motorsSection
-                testSection
-                Spacer()
+                Text("Connect a controller to test rumble")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+
+            Spacer()
         }
         .padding()
-        .navigationTitle("Rumble")
+        .disabled(manager.connectionState != .connected)
     }
 
     // MARK: - Motor Sliders

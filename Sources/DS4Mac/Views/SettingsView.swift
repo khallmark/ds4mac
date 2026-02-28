@@ -15,7 +15,6 @@ struct SettingsView: View {
             aboutSection
         }
         .formStyle(.grouped)
-        .navigationTitle("Settings")
     }
 
     // MARK: - Driver Extension Section

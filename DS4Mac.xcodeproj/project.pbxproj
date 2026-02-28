@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0FCF18B9F5918216BB180A99 /* InspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A9333774EC486B8FA571F /* InspectorView.swift */; };
 		12008BD7853FE2AF577F0E0B /* TouchpadVisualizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B15ED98AF47E0D1BA13E71C1 /* TouchpadVisualizationView.swift */; };
 		2312814877AFE5E72E38150A /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BD431F0AEE3032BC779665 /* MainView.swift */; };
 		308DB4E1CAFDE7983347601B /* ControllerStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D956690792C8810EE455C0F4 /* ControllerStatusView.swift */; };
@@ -19,7 +20,8 @@
 		8CE41FED1966E2E06024FAA7 /* MonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2F0B29753AA2124CB3E451 /* MonitorView.swift */; };
 		8EF3E45B2CC2119319954A0A /* ExtensionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCE9261434E152539E3C227 /* ExtensionManager.swift */; };
 		9256933A6EC235376F596E73 /* DS4UserClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09B87867BE9B7C8C993FB436 /* DS4UserClient.cpp */; };
-		97693DA4AB5923CEA97534C4 /* com.ds4mac.driver.DS4Driver.dext in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = F72802D3F81B288B6E5E4D17 /* com.ds4mac.driver.DS4Driver.dext */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		931D56C9F41AF27516FD4F63 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6F3C028DFFDDDCE1D9A89C /* StatusBarView.swift */; };
+		97693DA4AB5923CEA97534C4 /* DS4Driver.dext in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		97F59737E2FE29E9F043ED51 /* DS4Protocol in Frameworks */ = {isa = PBXBuildFile; productRef = 54BF44D03A67BE85D0D87EBF /* DS4Protocol */; };
 		A78AC921F488E277C84721B3 /* DriverCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE12CBCF9FD083CA45A56FE /* DriverCommunication.swift */; };
 		AC64E10A2ACB15C6221F5BAC /* DS4Transport in Frameworks */ = {isa = PBXBuildFile; productRef = 4198FD884A30DC25ABC4EE0F /* DS4Transport */; };
@@ -47,7 +49,7 @@
 			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
 			dstSubfolderSpec = 16;
 			files = (
-				97693DA4AB5923CEA97534C4 /* com.ds4mac.driver.DS4Driver.dext in Embed System Extensions */,
+				97693DA4AB5923CEA97534C4 /* DS4Driver.dext in Embed System Extensions */,
 			);
 			name = "Embed System Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -62,13 +64,16 @@
 		31061928D2CA3EB27636136F /* DS4HIDDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4HIDDevice.cpp; sourceTree = "<group>"; };
 		32DDF41540D281F00A62A506 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		3731D9E428BF6EAB066C5E7A /* DS4Protocol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4Protocol.cpp; sourceTree = "<group>"; };
+		472A9333774EC486B8FA571F /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
 		472F98C67536AA36D9528222 /* LightBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightBarView.swift; sourceTree = "<group>"; };
 		5B4832069FA24120DD010250 /* DS4MacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4MacApp.swift; sourceTree = "<group>"; };
+		6BB602BF9F7477E880B9ABF3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6BCE9261434E152539E3C227 /* ExtensionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionManager.swift; sourceTree = "<group>"; };
 		70D38C37DE34086A29CFBA48 /* DS4ReportDescriptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DS4ReportDescriptor.h; sourceTree = "<group>"; };
 		716866734A5E2B9DBEF735C8 /* DS4UserClient.iig */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.iig; path = DS4UserClient.iig; sourceTree = "<group>"; };
 		75FCF417CBCF6C578B91BFD4 /* DS4Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DS4Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		79261D0B62A5DAA42402E2E2 /* ControllerVisualizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerVisualizationView.swift; sourceTree = "<group>"; };
+		AE6F3C028DFFDDDCE1D9A89C /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		B15ED98AF47E0D1BA13E71C1 /* TouchpadVisualizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchpadVisualizationView.swift; sourceTree = "<group>"; };
 		B8DE02992AB837D97AD21BDE /* RumbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RumbleView.swift; sourceTree = "<group>"; };
 		B94BC5CA53811F96EC03FE20 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -77,7 +82,8 @@
 		DBC9CFAA315E7C5E04F79E3B /* DS4HIDDevice.iig */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.iig; path = DS4HIDDevice.iig; sourceTree = "<group>"; };
 		DFE12CBCF9FD083CA45A56FE /* DriverCommunication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverCommunication.swift; sourceTree = "<group>"; };
 		F0BD431F0AEE3032BC779665 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
-		F72802D3F81B288B6E5E4D17 /* com.ds4mac.driver.DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = com.ds4mac.driver.DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
+		F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
+		"TEMP_683A0A4C-0572-4A06-955D-EF4A54F742FD" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				5B4832069FA24120DD010250 /* DS4MacApp.swift */,
+				6BB602BF9F7477E880B9ABF3 /* Info.plist */,
 				CE04AA2740E95C39AE8BA223 /* Services */,
 				7A09960118E42DD49F3D8FA5 /* Views */,
 			);
@@ -134,11 +141,13 @@
 			children = (
 				D956690792C8810EE455C0F4 /* ControllerStatusView.swift */,
 				79261D0B62A5DAA42402E2E2 /* ControllerVisualizationView.swift */,
+				472A9333774EC486B8FA571F /* InspectorView.swift */,
 				472F98C67536AA36D9528222 /* LightBarView.swift */,
 				F0BD431F0AEE3032BC779665 /* MainView.swift */,
 				BF2F0B29753AA2124CB3E451 /* MonitorView.swift */,
 				B8DE02992AB837D97AD21BDE /* RumbleView.swift */,
 				B94BC5CA53811F96EC03FE20 /* SettingsView.swift */,
+				AE6F3C028DFFDDDCE1D9A89C /* StatusBarView.swift */,
 				B15ED98AF47E0D1BA13E71C1 /* TouchpadVisualizationView.swift */,
 			);
 			path = Views;
@@ -173,7 +182,7 @@
 		C48C32C9C9BE921BCDFC625F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F72802D3F81B288B6E5E4D17 /* com.ds4mac.driver.DS4Driver.dext */,
+				F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */,
 				75FCF417CBCF6C578B91BFD4 /* DS4Mac.app */,
 			);
 			name = Products;
@@ -227,7 +236,7 @@
 			packageProductDependencies = (
 			);
 			productName = DS4Driver;
-			productReference = F72802D3F81B288B6E5E4D17 /* com.ds4mac.driver.DS4Driver.dext */;
+			productReference = F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */;
 			productType = "com.apple.product-type.driver-extension";
 		};
 /* End PBXNativeTarget section */
@@ -238,6 +247,14 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					86E92730C27189006BD87717 = {
+						DevelopmentTeam = YLJAT3H39E;
+					};
+					FD263E6A71505250D6D57437 = {
+						DevelopmentTeam = YLJAT3H39E;
+					};
+				};
 			};
 			buildConfigurationList = BE0723B25EF8001C32AD0207 /* Build configuration list for PBXProject "DS4Mac" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -253,6 +270,7 @@
 				C834AF528300DF990079F474 /* XCLocalSwiftPackageReference "." */,
 				47945FB6EE4477980A8000F9 /* XCLocalSwiftPackageReference "." */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -284,11 +302,13 @@
 				DA077CF385884C0EB010AB33 /* DS4MacApp.swift in Sources */,
 				A78AC921F488E277C84721B3 /* DriverCommunication.swift in Sources */,
 				8EF3E45B2CC2119319954A0A /* ExtensionManager.swift in Sources */,
+				0FCF18B9F5918216BB180A99 /* InspectorView.swift in Sources */,
 				85EE0FA8BB80D15448984899 /* LightBarView.swift in Sources */,
 				2312814877AFE5E72E38150A /* MainView.swift in Sources */,
 				8CE41FED1966E2E06024FAA7 /* MonitorView.swift in Sources */,
 				6F888CEC7560DE53D0616DA8 /* RumbleView.swift in Sources */,
 				D852F50F8C705608475A9F96 /* SettingsView.swift in Sources */,
+				931D56C9F41AF27516FD4F63 /* StatusBarView.swift in Sources */,
 				12008BD7853FE2AF577F0E0B /* TouchpadVisualizationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -309,7 +329,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_ENTITLEMENTS = Sources/DS4Driver/DS4Driver.entitlements;
-				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DRIVERKIT_DEPLOYMENT_TARGET = 23.0;
 				HEADER_SEARCH_PATHS = (
@@ -323,12 +342,9 @@
 					"@executable_path/../Frameworks",
 				);
 				OTHER_LDFLAGS = (
-					"-framework",
-					DriverKit,
-					"-framework",
-					HIDDriverKit,
-					"-framework",
-					USBDriverKit,
+					"-framework DriverKit",
+					"-framework HIDDriverKit",
+					"-framework USBDriverKit",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.driver.DS4Driver;
 				PRODUCT_NAME = com.ds4mac.driver.DS4Driver;
@@ -342,10 +358,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_ENTITLEMENTS = Sources/DS4Driver/DS4Driver.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = YLJAT3H39E;
 				DRIVERKIT_DEPLOYMENT_TARGET = 23.0;
 				HEADER_SEARCH_PATHS = (
 					"$(SDKROOT)/System/DriverKit/System/Library/Frameworks/DriverKit.framework/Headers",
@@ -358,16 +371,12 @@
 					"@executable_path/../Frameworks",
 				);
 				OTHER_LDFLAGS = (
-					"-framework",
-					DriverKit,
-					"-framework",
-					HIDDriverKit,
-					"-framework",
-					USBDriverKit,
+					"-framework DriverKit",
+					"-framework HIDDriverKit",
+					"-framework USBDriverKit",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.driver.DS4Driver;
 				PRODUCT_NAME = com.ds4mac.driver.DS4Driver;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = driverkit;
 				SUPPORTED_PLATFORMS = driverkit;
 			};
@@ -408,6 +417,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = YLJAT3H39E;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -434,11 +444,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = DS4Mac.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = YLJAT3H39E;
 				INFOPLIST_FILE = Sources/DS4Mac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -446,7 +453,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.app;
 				PRODUCT_NAME = DS4Mac;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SYSTEM_EXTENSION_API_USAGE = YES;
 			};
@@ -506,6 +512,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = YLJAT3H39E;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

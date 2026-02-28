@@ -9,33 +9,16 @@ struct MonitorView: View {
     @EnvironmentObject var manager: DS4TransportManager
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if manager.connectionState != .connected {
-                    notConnectedView
-                } else {
-                    sticksSection
-                    triggersSection
-                    buttonsSection
-                    imuSection
-                    touchpadSection
-                }
-            }
-            .padding()
+        VStack(alignment: .leading, spacing: 16) {
+            sticksSection
+            triggersSection
+            buttonsSection
+            imuSection
+            touchpadSection
         }
-        .navigationTitle("Input Monitor")
+        .padding()
         .font(.system(.body, design: .monospaced))
-    }
-
-    // MARK: - Not Connected
-
-    @ViewBuilder
-    private var notConnectedView: some View {
-        ContentUnavailableView(
-            "No Controller Connected",
-            systemImage: "gamecontroller",
-            description: Text("Connect a DualShock 4 controller to see live input data.")
-        )
+        .opacity(manager.connectionState == .connected ? 1.0 : 0.5)
     }
 
     // MARK: - Sticks

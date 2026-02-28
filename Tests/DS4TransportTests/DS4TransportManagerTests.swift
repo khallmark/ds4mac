@@ -29,9 +29,9 @@ final class DS4TransportManagerTests: XCTestCase {
         report[5] = buttons0
         report[8] = l2
         report[9] = r2
-        // Touch fingers inactive (bit 7 set)
-        report[34] = 0x80
-        report[38] = 0x80
+        // Touch fingers inactive (bit 7 set): finger 0 at byte 35, finger 1 at byte 39
+        report[35] = 0x80
+        report[39] = 0x80
         return report
     }
 

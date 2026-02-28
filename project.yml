@@ -31,6 +31,7 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
+    DEVELOPMENT_TEAM: YLJAT3H39E
 
 targets:
 
@@ -91,8 +92,6 @@ targets:
         DRIVERKIT_DEPLOYMENT_TARGET: "23.0"
         # C++ standard for DriverKit
         CLANG_CXX_LANGUAGE_STANDARD: c++20
-        # DriverKit targets use a different runtime
-        CODE_SIGN_IDENTITY: "-"
         # Header search paths for DriverKit SDK
         HEADER_SEARCH_PATHS:
           - "$(SDKROOT)/System/DriverKit/System/Library/Frameworks/DriverKit.framework/Headers"

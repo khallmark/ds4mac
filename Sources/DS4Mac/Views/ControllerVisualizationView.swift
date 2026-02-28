@@ -9,19 +9,10 @@ struct ControllerVisualizationView: View {
     @EnvironmentObject var manager: DS4TransportManager
 
     var body: some View {
-        ScrollView {
-            if manager.connectionState != .connected {
-                ContentUnavailableView(
-                    "No Controller Connected",
-                    systemImage: "gamecontroller",
-                    description: Text("Connect a DualShock 4 to see the live visualization.")
-                )
-            } else {
-                controllerBody
-                    .padding()
-            }
-        }
-        .navigationTitle("Controller")
+        controllerBody
+            .padding()
+            .opacity(manager.connectionState == .connected ? 1.0 : 0.3)
+            .animation(.easeInOut(duration: 0.3), value: manager.connectionState == .connected)
     }
 
     // MARK: - Controller Body

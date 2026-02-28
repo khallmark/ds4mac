@@ -56,6 +56,10 @@ public final class DS4TransportManager: ObservableObject {
     /// Timer to flush the most recent pending state on the throttle interval.
     private var displayTimer: Timer?
 
+    /// Flag set from transport callback, read by timer to avoid unnecessary Task allocation.
+    /// Deliberately nonisolated — racy reads are acceptable (the authoritative check is in flushPendingState).
+    nonisolated(unsafe) private var hasPendingState: Bool = false
+
     public init(transport: DS4TransportProtocol) {
         self.transport = transport
         setupTransportCallbacks()
@@ -63,13 +67,14 @@ public final class DS4TransportManager: ObservableObject {
 
     deinit {
         displayTimer?.invalidate()
+        transport.onEvent = nil
     }
 
     // MARK: - Public API
 
     /// Connect to the first available DS4 controller.
     public func connect() {
-        guard connectionState == .disconnected || connectionState != .connecting else { return }
+        guard connectionState == .disconnected else { return }
         connectionState = .connecting
         lastError = nil
 
@@ -166,6 +171,7 @@ public final class DS4TransportManager: ObservableObject {
         do {
             let state = try DS4InputReportParser.parse(bytes)
             pendingState = state
+            hasPendingState = true
         } catch {
             // Silently skip malformed/reduced reports
         }
@@ -174,6 +180,7 @@ public final class DS4TransportManager: ObservableObject {
     private func startDisplayTimer() {
         displayTimer?.invalidate()
         displayTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
+            guard let self, self.hasPendingState else { return }
             Task { @MainActor [weak self] in
                 self?.flushPendingState()
             }
@@ -182,8 +189,10 @@ public final class DS4TransportManager: ObservableObject {
 
     private func flushPendingState() {
         guard let state = pendingState else { return }
-        inputState = state
         pendingState = nil
+        hasPendingState = false
+        guard state != inputState else { return }
+        inputState = state
     }
 }
 

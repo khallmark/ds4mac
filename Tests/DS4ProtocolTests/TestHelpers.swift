@@ -20,6 +20,7 @@ func makeUSBReport(
     accelYLo: UInt8 = 0, accelYHi: UInt8 = 0,
     accelZLo: UInt8 = 0, accelZHi: UInt8 = 0,
     batteryByte: UInt8 = 0x00,
+    touchPacketCount: UInt8 = 0,
     touchPacketCounter: UInt8 = 0,
     touch0: [UInt8] = [0x80, 0, 0, 0],  // inactive (bit 7 set)
     touch1: [UInt8] = [0x80, 0, 0, 0]   // inactive
@@ -53,11 +54,12 @@ func makeUSBReport(
     // bytes 25-29 = extension data (skip)
     report[30] = batteryByte
     // bytes 31-32 = reserved
-    report[33] = touchPacketCounter
-    report[34] = touch0[0]; report[35] = touch0[1]
-    report[36] = touch0[2]; report[37] = touch0[3]
-    report[38] = touch1[0]; report[39] = touch1[1]
-    report[40] = touch1[2]; report[41] = touch1[3]
+    report[33] = touchPacketCount       // USB byte 33: touch packet count
+    report[34] = touchPacketCounter     // USB byte 34: touch packet counter/timestamp
+    report[35] = touch0[0]; report[36] = touch0[1]  // USB bytes 35-38: finger 0
+    report[37] = touch0[2]; report[38] = touch0[3]
+    report[39] = touch1[0]; report[40] = touch1[1]  // USB bytes 39-42: finger 1
+    report[41] = touch1[2]; report[42] = touch1[3]
     return report
 }
 
@@ -94,11 +96,12 @@ func makeBTReport(
     // byte 14 = temperature
     // bytes 15-26 = IMU
     report[32] = batteryByte    // battery at BT offset 32 = USB offset 30 + 2
-    report[35] = 0              // touch packet counter at BT offset 35 = USB offset 33 + 2
-    report[36] = touch0[0]; report[37] = touch0[1]
-    report[38] = touch0[2]; report[39] = touch0[3]
-    report[40] = touch1[0]; report[41] = touch1[1]
-    report[42] = touch1[2]; report[43] = touch1[3]
+    report[35] = 0              // BT byte 35 = USB byte 33: touch packet count
+    report[36] = 0              // BT byte 36 = USB byte 34: touch packet counter/timestamp
+    report[37] = touch0[0]; report[38] = touch0[1]  // BT bytes 37-40: finger 0
+    report[39] = touch0[2]; report[40] = touch0[3]
+    report[41] = touch1[0]; report[42] = touch1[1]  // BT bytes 41-44: finger 1
+    report[43] = touch1[2]; report[44] = touch1[3]
     // Compute and append valid CRC-32
     let crcInput = [DS4CRCPrefix.input] + Array(report[0..<74])
     let crc = DS4CRC32.compute(crcInput)

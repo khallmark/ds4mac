@@ -17,7 +17,6 @@ struct ControllerStatusView: View {
             Spacer()
         }
         .padding()
-        .navigationTitle("Controller Status")
     }
 
     // MARK: - Connection Status

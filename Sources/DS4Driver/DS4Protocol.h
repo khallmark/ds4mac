@@ -93,7 +93,8 @@ struct DS4TouchFinger {
 struct DS4TouchpadState {
     DS4TouchFinger touch0;
     DS4TouchFinger touch1;
-    uint8_t packetCounter;
+    uint8_t packetCount;    // number of touch data packets in report (USB byte 33)
+    uint8_t packetCounter;  // auto-incrementing touch event counter (USB byte 34)
 };
 
 // MARK: - IMU State (raw signed 16-bit, uncalibrated)

@@ -86,26 +86,29 @@ static void parseControllerState(const uint8_t *buf, uint32_t o,
 
     // Bytes [o+30..o+31]: status/reserved (skipped)
 
-    // Touchpad: [o+32] packet counter
-    state->touchpad.packetCounter = buf[o + 32];
+    // Touchpad: [o+32] → USB byte 33 (touch packet count)
+    state->touchpad.packetCount = buf[o + 32];
 
-    // Touch finger 0: [o+33..o+36]
+    // Touchpad: [o+33] → USB byte 34 (touch packet counter/timestamp)
+    state->touchpad.packetCounter = buf[o + 33];
+
+    // Touch finger 0: [o+34..o+37] → USB bytes 35-38
     // Byte 0: active (bit 7 inverted: 0=touching) | tracking ID (bits 6:0)
     // Bytes 1-3: 12-bit X and 12-bit Y split across 3 bytes
-    state->touchpad.touch0.active     = (buf[o + 33] & 0x80) == 0;
-    state->touchpad.touch0.trackingID = buf[o + 33] & 0x7F;
-    state->touchpad.touch0.x = (uint16_t)buf[o + 34] |
-                               ((uint16_t)(buf[o + 35] & 0x0F) << 8);
-    state->touchpad.touch0.y = ((uint16_t)(buf[o + 35] >> 4)) |
-                               ((uint16_t)buf[o + 36] << 4);
+    state->touchpad.touch0.active     = (buf[o + 34] & 0x80) == 0;
+    state->touchpad.touch0.trackingID = buf[o + 34] & 0x7F;
+    state->touchpad.touch0.x = (uint16_t)buf[o + 35] |
+                               ((uint16_t)(buf[o + 36] & 0x0F) << 8);
+    state->touchpad.touch0.y = ((uint16_t)(buf[o + 36] >> 4)) |
+                               ((uint16_t)buf[o + 37] << 4);
 
-    // Touch finger 1: [o+37..o+40]
-    state->touchpad.touch1.active     = (buf[o + 37] & 0x80) == 0;
-    state->touchpad.touch1.trackingID = buf[o + 37] & 0x7F;
-    state->touchpad.touch1.x = (uint16_t)buf[o + 38] |
-                               ((uint16_t)(buf[o + 39] & 0x0F) << 8);
-    state->touchpad.touch1.y = ((uint16_t)(buf[o + 39] >> 4)) |
-                               ((uint16_t)buf[o + 40] << 4);
+    // Touch finger 1: [o+38..o+41] → USB bytes 39-42
+    state->touchpad.touch1.active     = (buf[o + 38] & 0x80) == 0;
+    state->touchpad.touch1.trackingID = buf[o + 38] & 0x7F;
+    state->touchpad.touch1.x = (uint16_t)buf[o + 39] |
+                               ((uint16_t)(buf[o + 40] & 0x0F) << 8);
+    state->touchpad.touch1.y = ((uint16_t)(buf[o + 40] >> 4)) |
+                               ((uint16_t)buf[o + 41] << 4);
 }
 
 // MARK: - Public API

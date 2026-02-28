@@ -13,22 +13,13 @@ struct TouchpadVisualizationView: View {
     private let touchMaxY: CGFloat = 943
 
     var body: some View {
-        ScrollView {
-            if manager.connectionState != .connected {
-                ContentUnavailableView(
-                    "No Controller Connected",
-                    systemImage: "hand.point.up",
-                    description: Text("Connect a DualShock 4 to see touchpad input.")
-                )
-            } else {
-                VStack(spacing: 20) {
-                    touchpadCanvas
-                    touchDetails
-                }
-                .padding()
-            }
+        VStack(spacing: 20) {
+            touchpadCanvas
+            touchDetails
         }
-        .navigationTitle("Touchpad")
+        .padding()
+        .opacity(manager.connectionState == .connected ? 1.0 : 0.3)
+        .animation(.easeInOut(duration: 0.3), value: manager.connectionState == .connected)
     }
 
     // MARK: - Touchpad Canvas
@@ -48,8 +39,8 @@ struct TouchpadVisualizationView: View {
                         .fill(Color(.textBackgroundColor).opacity(0.5))
                         .strokeBorder(Color.secondary.opacity(0.3), lineWidth: 1)
 
-                    // Grid lines
-                    gridOverlay(width: padWidth, height: padHeight)
+                    // Grid lines (separate view — no @EnvironmentObject, won't redraw on state changes)
+                    TouchpadGridOverlay()
 
                     // Touch 0
                     if tp.touch0.active {
@@ -83,43 +74,6 @@ struct TouchpadVisualizationView: View {
             .aspectRatio(touchMaxX / touchMaxY, contentMode: .fit)
             .frame(maxWidth: 500)
             .padding(.vertical, 8)
-        }
-    }
-
-    // MARK: - Grid Overlay
-
-    private func gridOverlay(width: CGFloat, height: CGFloat) -> some View {
-        Canvas { ctx, size in
-            let lineColor = Color.secondary.opacity(0.1)
-            let cols = 8
-            let rows = 4
-
-            for i in 1..<cols {
-                let x = CGFloat(i) / CGFloat(cols) * size.width
-                ctx.stroke(
-                    Path { p in p.move(to: .init(x: x, y: 0)); p.addLine(to: .init(x: x, y: size.height)) },
-                    with: .color(lineColor), lineWidth: 0.5
-                )
-            }
-            for i in 1..<rows {
-                let y = CGFloat(i) / CGFloat(rows) * size.height
-                ctx.stroke(
-                    Path { p in p.move(to: .init(x: 0, y: y)); p.addLine(to: .init(x: size.width, y: y)) },
-                    with: .color(lineColor), lineWidth: 0.5
-                )
-            }
-
-            // Center crosshair
-            let cx = size.width / 2
-            let cy = size.height / 2
-            ctx.stroke(
-                Path { p in p.move(to: .init(x: cx - 8, y: cy)); p.addLine(to: .init(x: cx + 8, y: cy)) },
-                with: .color(Color.secondary.opacity(0.3)), lineWidth: 1
-            )
-            ctx.stroke(
-                Path { p in p.move(to: .init(x: cx, y: cy - 8)); p.addLine(to: .init(x: cx, y: cy + 8)) },
-                with: .color(Color.secondary.opacity(0.3)), lineWidth: 1
-            )
         }
     }
 
@@ -198,6 +152,46 @@ struct TouchpadVisualizationView: View {
             }
             .font(.system(.caption))
             .padding(.vertical, 4)
+        }
+    }
+}
+
+// MARK: - Static Grid Overlay
+
+/// Separate view with no observable dependencies — SwiftUI will not redraw it
+/// when DS4TransportManager publishes input state changes.
+private struct TouchpadGridOverlay: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let lineColor = Color.secondary.opacity(0.1)
+            let cols = 8
+            let rows = 4
+
+            for i in 1..<cols {
+                let x = CGFloat(i) / CGFloat(cols) * size.width
+                ctx.stroke(
+                    Path { p in p.move(to: .init(x: x, y: 0)); p.addLine(to: .init(x: x, y: size.height)) },
+                    with: .color(lineColor), lineWidth: 0.5
+                )
+            }
+            for i in 1..<rows {
+                let y = CGFloat(i) / CGFloat(rows) * size.height
+                ctx.stroke(
+                    Path { p in p.move(to: .init(x: 0, y: y)); p.addLine(to: .init(x: size.width, y: y)) },
+                    with: .color(lineColor), lineWidth: 0.5
+                )
+            }
+
+            let cx = size.width / 2
+            let cy = size.height / 2
+            ctx.stroke(
+                Path { p in p.move(to: .init(x: cx - 8, y: cy)); p.addLine(to: .init(x: cx + 8, y: cy)) },
+                with: .color(Color.secondary.opacity(0.3)), lineWidth: 1
+            )
+            ctx.stroke(
+                Path { p in p.move(to: .init(x: cx, y: cy - 8)); p.addLine(to: .init(x: cx, y: cy + 8)) },
+                with: .color(Color.secondary.opacity(0.3)), lineWidth: 1
+            )
         }
     }
 }

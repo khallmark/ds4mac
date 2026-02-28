@@ -13,21 +13,20 @@ struct LightBarView: View {
 
     var body: some View {
         VStack(spacing: 20) {
+            colorPreview
+            slidersSection
+            presetsSection
+
             if manager.connectionState != .connected {
-                ContentUnavailableView(
-                    "No Controller Connected",
-                    systemImage: "gamecontroller",
-                    description: Text("Connect a DualShock 4 to control the light bar.")
-                )
-            } else {
-                colorPreview
-                slidersSection
-                presetsSection
-                Spacer()
+                Text("Connect a controller to apply changes")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+
+            Spacer()
         }
         .padding()
-        .navigationTitle("Light Bar")
+        .disabled(manager.connectionState != .connected)
     }
 
     // MARK: - Color Preview

@@ -83,15 +83,18 @@ public struct DS4TouchFinger: Codable, Equatable, Sendable {
 public struct DS4TouchpadState: Codable, Equatable, Sendable {
     public var touch0: DS4TouchFinger
     public var touch1: DS4TouchFinger
-    public var packetCounter: UInt8
+    public var packetCount: UInt8       // number of touch data packets in this report (USB byte 33)
+    public var packetCounter: UInt8     // auto-incrementing touch event counter (USB byte 34)
 
     public init(
         touch0: DS4TouchFinger = DS4TouchFinger(),
         touch1: DS4TouchFinger = DS4TouchFinger(),
+        packetCount: UInt8 = 0,
         packetCounter: UInt8 = 0
     ) {
         self.touch0 = touch0
         self.touch1 = touch1
+        self.packetCount = packetCount
         self.packetCounter = packetCounter
     }
 }

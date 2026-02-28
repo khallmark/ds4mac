@@ -116,14 +116,17 @@ public enum DS4InputReportParser {
 
         // Bytes [o+30..o+31] → USB bytes 31-32 (status/reserved, skipped)
 
-        // Touchpad: [o+32] → USB byte 33 (touch packet counter)
-        let touchPktCounter = buf[o + 32]
+        // Touchpad: [o+32] → USB byte 33 (touch packet count)
+        let touchPktCount = buf[o + 32]
 
-        // Touch finger 0: [o+33..o+36] → USB bytes 34-37
-        let touch0 = parseTouchFinger(buf, offset: o + 33)
+        // Touchpad: [o+33] → USB byte 34 (touch packet counter/timestamp)
+        let touchPktCounter = buf[o + 33]
 
-        // Touch finger 1: [o+37..o+40] → USB bytes 38-41
-        let touch1 = parseTouchFinger(buf, offset: o + 37)
+        // Touch finger 0: [o+34..o+37] → USB bytes 35-38
+        let touch0 = parseTouchFinger(buf, offset: o + 34)
+
+        // Touch finger 1: [o+38..o+41] → USB bytes 39-42
+        let touch1 = parseTouchFinger(buf, offset: o + 38)
 
         return DS4InputState(
             leftStick: leftStick,
@@ -138,7 +141,8 @@ public enum DS4InputReportParser {
             l2Trigger: l2Trigger,
             r2Trigger: r2Trigger,
             touchpad: DS4TouchpadState(
-                touch0: touch0, touch1: touch1, packetCounter: touchPktCounter
+                touch0: touch0, touch1: touch1,
+                packetCount: touchPktCount, packetCounter: touchPktCounter
             ),
             imu: DS4IMUState(
                 gyroPitch: gyroPitch, gyroYaw: gyroYaw, gyroRoll: gyroRoll,

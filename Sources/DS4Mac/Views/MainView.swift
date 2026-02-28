@@ -1,66 +1,58 @@
-// MainView.swift — Primary navigation layout for DS4Mac
-// NavigationSplitView with sidebar sections for each feature area.
+// MainView.swift — Primary layout for DS4Mac
+// Hero+inspector layout with controller visualization on the left
+// and a tabbed inspector panel on the right.
 
 import SwiftUI
 import DS4Protocol
 import DS4Transport
 
 struct MainView: View {
-    @EnvironmentObject var manager: DS4TransportManager
-
-    enum Section: String, CaseIterable, Identifiable {
+    enum InspectorTab: String, CaseIterable, Identifiable {
         case status = "Status"
-        case controller = "Controller"
-        case touchpad = "Touchpad"
-        case monitor = "Monitor"
-        case lightBar = "Light Bar"
+        case led = "LED"
         case rumble = "Rumble"
+        case data = "Data"
         case settings = "Settings"
 
-        var id: String { rawValue }
+        var id: Self { self }
 
         var systemImage: String {
             switch self {
-            case .status:     return "gamecontroller"
-            case .controller: return "gamecontroller.fill"
-            case .touchpad:   return "hand.point.up"
-            case .monitor:    return "waveform"
-            case .lightBar:   return "lightbulb.fill"
-            case .rumble:     return "waveform.path"
-            case .settings:   return "gear"
+            case .status:   return "info.circle"
+            case .led:      return "lightbulb.fill"
+            case .rumble:   return "waveform.path"
+            case .data:     return "list.bullet.rectangle"
+            case .settings: return "gear"
             }
         }
     }
 
-    @State private var selectedSection: Section? = .status
+    @EnvironmentObject var manager: DS4TransportManager
+    @State private var inspectorTab: InspectorTab = .status
 
     var body: some View {
-        NavigationSplitView {
-            List(Section.allCases, selection: $selectedSection) { section in
-                Label(section.rawValue, systemImage: section.systemImage)
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                // Hero area (left)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        ControllerVisualizationView()
+                        TouchpadVisualizationView()
+                    }
+                    .padding()
+                }
+                .frame(minWidth: 460)
+                .frame(maxWidth: .infinity)
+
+                Divider()
+
+                // Inspector panel (right)
+                InspectorView(tab: $inspectorTab)
+                    .frame(width: 300)
             }
-            .navigationTitle("DS4Mac")
-        } detail: {
-            switch selectedSection {
-            case .status:
-                ControllerStatusView()
-            case .controller:
-                ControllerVisualizationView()
-            case .touchpad:
-                TouchpadVisualizationView()
-            case .monitor:
-                MonitorView()
-            case .lightBar:
-                LightBarView()
-            case .rumble:
-                RumbleView()
-            case .settings:
-                SettingsView()
-            case nil:
-                Text("Select a section")
-                    .foregroundStyle(.secondary)
-            }
+
+            StatusBarView()
         }
-        .frame(minWidth: 700, minHeight: 500)
+        .frame(minWidth: 800, minHeight: 550)
     }
 }

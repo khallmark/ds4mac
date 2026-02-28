@@ -8,7 +8,6 @@ let package = Package(
         .library(name: "DS4Protocol", targets: ["DS4Protocol"]),
         .library(name: "DS4Transport", targets: ["DS4Transport"]),
         .executable(name: "DS4Tool", targets: ["DS4Tool"]),
-        .executable(name: "DS4Mac", targets: ["DS4Mac"]),
     ],
     targets: [
         .target( 
@@ -31,14 +30,8 @@ let package = Package(
                 .linkedFramework("IOKit"),
             ]
         ),
-        .executableTarget(
-            name: "DS4Mac",
-            dependencies: ["DS4Protocol", "DS4Transport"],
-            path: "Sources/DS4Mac",
-            linkerSettings: [
-                .linkedFramework("IOKit"),
-            ]
-        ),
+        // DS4Mac app is built via Xcode (project.yml / xcodegen), not SPM.
+        // It requires a proper .app bundle for SystemExtensions, dext embedding, etc.
         .testTarget(
             name: "DS4ProtocolTests",
             dependencies: ["DS4Protocol"],
