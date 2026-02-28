@@ -10,6 +10,8 @@ struct MainView: View {
 
     enum Section: String, CaseIterable, Identifiable {
         case status = "Status"
+        case controller = "Controller"
+        case touchpad = "Touchpad"
         case monitor = "Monitor"
         case lightBar = "Light Bar"
         case rumble = "Rumble"
@@ -19,11 +21,13 @@ struct MainView: View {
 
         var systemImage: String {
             switch self {
-            case .status:   return "gamecontroller"
-            case .monitor:  return "waveform"
-            case .lightBar: return "lightbulb.fill"
-            case .rumble:   return "waveform.path"
-            case .settings: return "gear"
+            case .status:     return "gamecontroller"
+            case .controller: return "gamecontroller.fill"
+            case .touchpad:   return "hand.point.up"
+            case .monitor:    return "waveform"
+            case .lightBar:   return "lightbulb.fill"
+            case .rumble:     return "waveform.path"
+            case .settings:   return "gear"
             }
         }
     }
@@ -40,6 +44,10 @@ struct MainView: View {
             switch selectedSection {
             case .status:
                 ControllerStatusView()
+            case .controller:
+                ControllerVisualizationView()
+            case .touchpad:
+                TouchpadVisualizationView()
             case .monitor:
                 MonitorView()
             case .lightBar:

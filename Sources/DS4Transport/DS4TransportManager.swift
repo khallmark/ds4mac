@@ -30,6 +30,9 @@ public final class DS4TransportManager: ObservableObject {
     /// Connected device info.
     @Published public private(set) var deviceInfo: DS4DeviceInfo?
 
+    /// Last output state sent to the controller (LED color, rumble).
+    @Published public private(set) var outputState: DS4OutputState = DS4OutputState()
+
     /// Error message, if any.
     @Published public private(set) var lastError: String?
 
@@ -116,6 +119,7 @@ public final class DS4TransportManager: ObservableObject {
         }
         do {
             try transport.sendOutputReport(report)
+            outputState = output
         } catch {
             lastError = "Failed to send output report: \(error)"
         }
