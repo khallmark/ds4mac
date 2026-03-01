@@ -65,8 +65,6 @@ targets:
         SYSTEM_EXTENSION_API_USAGE: YES
         # Required for embedding dexts
         COPY_PHASE_STRIP: NO
-    entitlements:
-      path: DS4Mac.entitlements
 
   # ────────────────────────────────────────────────
   # DS4Driver — DriverKit System Extension (C++)
@@ -102,5 +100,3 @@ targets:
           - "-framework DriverKit"
           - "-framework HIDDriverKit"
           - "-framework USBDriverKit"
-    entitlements:
-      path: Sources/DS4Driver/DS4Driver.entitlements

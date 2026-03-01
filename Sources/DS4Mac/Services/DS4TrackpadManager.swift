@@ -84,6 +84,9 @@ final class DS4TrackpadManager {
     private var scrollAccumDX: Double = 0
     private var scrollAccumDY: Double = 0
 
+    // Pinch accumulation (same pattern — prevent Int32 truncation of small deltas)
+    private var pinchAccum: Double = 0
+
     // Weak reference to the transport manager
     @ObservationIgnored
     private weak var transportManager: DS4TransportManager?
@@ -113,7 +116,7 @@ final class DS4TrackpadManager {
     private let scrollCommitThreshold: Double = 8.0
 
     /// Inter-finger distance change threshold to commit to pinch gesture.
-    private let pinchCommitThreshold: Double = 30.0
+    private let pinchCommitThreshold: Double = 15.0
 
     // MARK: - Init
 
@@ -403,13 +406,17 @@ final class DS4TrackpadManager {
         accumulatedDX -= Double(intDX)
         accumulatedDY -= Double(intDY)
 
-        // Get current cursor position for the event constructor
+        // CGEvent.mouseMoved moves cursor to the ABSOLUTE mouseCursorPosition.
+        // Delta fields are just metadata for apps — they don't drive movement.
+        // We must compute the new position ourselves.
         let currentPos = CGEvent(source: nil)?.location ?? .zero
+        let newPos = CGPoint(x: currentPos.x + Double(intDX),
+                             y: currentPos.y + Double(intDY))
 
         guard let event = CGEvent(
             mouseEventSource: eventSource,
             mouseType: .mouseMoved,
-            mouseCursorPosition: currentPos,
+            mouseCursorPosition: newPos,
             mouseButton: .left
         ) else { return }
 
@@ -472,8 +479,13 @@ final class DS4TrackpadManager {
 
     private func postPinchZoom(scaleDelta: Double) {
         // Positive delta = fingers apart = zoom in = scroll up
-        let zoomAmount = Int32(scaleDelta * pinchSensitivity * 0.1)
+        // Scale: touchpad pixels → scroll pixels. Accumulate to avoid Int32 truncation.
+        pinchAccum += scaleDelta * pinchSensitivity * 0.5
+
+        let zoomAmount = Int32(pinchAccum)
         guard zoomAmount != 0 else { return }
+
+        pinchAccum -= Double(zoomAmount)
 
         guard let event = CGEvent(
             scrollWheelEvent2Source: eventSource,
@@ -546,6 +558,7 @@ final class DS4TrackpadManager {
         accumulatedDY = 0
         scrollAccumDX = 0
         scrollAccumDY = 0
+        pinchAccum = 0
     }
 
     private func resetAllState() {
@@ -562,5 +575,6 @@ final class DS4TrackpadManager {
         accumulatedDY = 0
         scrollAccumDX = 0
         scrollAccumDY = 0
+        pinchAccum = 0
     }
 }

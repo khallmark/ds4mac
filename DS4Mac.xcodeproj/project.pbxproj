@@ -128,7 +128,7 @@
 		F27647B7FCBFF18A070C231A /* WeaponSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponSystem.swift; sourceTree = "<group>"; };
 		F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAC3B5D4EF9EA11EB77C953E /* SpaceCombatWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceCombatWindow.swift; sourceTree = "<group>"; };
-		"TEMP_468DDA93-7F97-4D9E-877A-EF7F2C9C3F0B" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
+		"TEMP_90725EC8-E0A9-482C-A98B-B28ED11A0B80" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
