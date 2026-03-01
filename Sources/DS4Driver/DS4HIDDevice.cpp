@@ -42,8 +42,11 @@ struct DS4HIDDevice_IVars {
 
     DS4InputState                  inputState;
     DS4OutputState                 outputState;
+    DS4CalibrationData             calibration;
 
     uint16_t                       productID;
+    uint8_t                        lastBatteryLevel;
+    bool                           lastCableConnected;
 };
 
 // MARK: - Lifecycle
@@ -61,6 +64,9 @@ bool DS4HIDDevice::init()
 
     ds4_input_state_init(&ivars->inputState);
     ds4_output_state_init(&ivars->outputState);
+    ds4_calibration_data_init(&ivars->calibration);
+    ivars->lastBatteryLevel = 0xFF;    // sentinel to force first update
+    ivars->lastCableConnected = false;
 
     os_log(OS_LOG_DEFAULT, LOG_PREFIX "init");
     return true;
@@ -105,6 +111,12 @@ kern_return_t DS4HIDDevice::Start_Impl(IOService * provider)
     if (ret != kIOReturnSuccess) {
         os_log(OS_LOG_DEFAULT, LOG_PREFIX "configureDevice failed: 0x%x", ret);
         return ret;
+    }
+
+    // Read IMU calibration from Feature Report 0x02 (non-fatal if it fails)
+    ret = readCalibrationData();
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Calibration read failed (non-fatal): 0x%x — using BMI055 nominal values", ret);
     }
 
     ret = startInputPolling();
@@ -380,6 +392,14 @@ void DS4HIDDevice::processInputReport(const uint8_t * data, uint32_t length)
 {
     // Parse the USB input report into our internal state struct
     ds4_parse_usb_input_report(data, length, &ivars->inputState);
+
+    // Update IORegistry battery properties when level or charging state changes
+    if (ivars->inputState.battery.level != ivars->lastBatteryLevel ||
+        ivars->inputState.battery.cableConnected != ivars->lastCableConnected) {
+        updateBatteryProperties();
+        ivars->lastBatteryLevel = ivars->inputState.battery.level;
+        ivars->lastCableConnected = ivars->inputState.battery.cableConnected;
+    }
 }
 
 kern_return_t DS4HIDDevice::sendOutputReport(const uint8_t * data, uint32_t length)
@@ -422,6 +442,123 @@ bool DS4HIDDevice::copyInputState(void * outBuffer, uint32_t bufferSize)
     // diagnostic reads via IOUserClient (getInputState/getBatteryState selectors).
     memcpy(outBuffer, &ivars->inputState, sizeof(DS4InputState));
     return true;
+}
+
+// MARK: - IMU Calibration
+
+kern_return_t DS4HIDDevice::readCalibrationData()
+{
+    if (!ivars->interface) {
+        return kIOReturnNotReady;
+    }
+
+    // Allocate a buffer for the 37-byte calibration feature report
+    IOBufferMemoryDescriptor * calBuffer = nullptr;
+    kern_return_t ret = IOBufferMemoryDescriptor::Create(
+        kIOMemoryDirectionIn,
+        DS4_CALIBRATION_REPORT_SIZE,
+        0,
+        &calBuffer
+    );
+    if (ret != kIOReturnSuccess || !calBuffer) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Failed to create calibration buffer: 0x%x", ret);
+        return ret;
+    }
+
+    // USB HID GET_REPORT control transfer for Feature Report 0x02
+    // bmRequestType = 0xA1 (device-to-host, class, interface)
+    // bRequest = 0x01 (GET_REPORT)
+    // wValue = 0x0302 (report type Feature=0x03 << 8 | report ID 0x02)
+    // wIndex = 0 (interface number)
+    // wLength = 37
+    uint16_t bytesTransferred = 0;
+    ret = ivars->interface->DeviceRequest(
+        /* bmRequestType */ 0xA1,
+        /* bRequest      */ 0x01,
+        /* wValue        */ 0x0302,
+        /* wIndex        */ 0,
+        /* wLength       */ DS4_CALIBRATION_REPORT_SIZE,
+        /* dataBuffer    */ calBuffer,
+        /* bytesTransferred */ &bytesTransferred,
+        /* completionTimeout */ 5000  // 5 second timeout
+    );
+
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "DeviceRequest for calibration failed: 0x%x", ret);
+        OSSafeReleaseNULL(calBuffer);
+        return ret;
+    }
+
+    if (bytesTransferred < DS4_CALIBRATION_REPORT_SIZE) {
+        os_log(OS_LOG_DEFAULT, LOG_PREFIX "Calibration report too short: %u bytes", bytesTransferred);
+        OSSafeReleaseNULL(calBuffer);
+        return kIOReturnUnderrun;
+    }
+
+    // Extract buffer bytes and parse
+    IOAddressSegment range = {};
+    ret = calBuffer->GetAddressRange(&range);
+    if (ret == kIOReturnSuccess && range.address && range.length >= DS4_CALIBRATION_REPORT_SIZE) {
+        const uint8_t * data = reinterpret_cast<const uint8_t *>(range.address);
+        if (ds4_parse_usb_calibration(data, DS4_CALIBRATION_REPORT_SIZE, &ivars->calibration)) {
+            os_log(OS_LOG_DEFAULT, LOG_PREFIX "Calibration loaded (valid=%d, pitchBias=%d, yawBias=%d, rollBias=%d)",
+                   ivars->calibration.isValid,
+                   ivars->calibration.gyroPitchBias,
+                   ivars->calibration.gyroYawBias,
+                   ivars->calibration.gyroRollBias);
+        } else {
+            os_log(OS_LOG_DEFAULT, LOG_PREFIX "Calibration parse failed");
+        }
+    }
+
+    OSSafeReleaseNULL(calBuffer);
+    return kIOReturnSuccess;
+}
+
+bool DS4HIDDevice::copyCalibrationData(void * outBuffer, uint32_t bufferSize)
+{
+    if (!outBuffer || bufferSize < sizeof(DS4CalibrationData)) {
+        return false;
+    }
+    memcpy(outBuffer, &ivars->calibration, sizeof(DS4CalibrationData));
+    return true;
+}
+
+bool DS4HIDDevice::copyCalibratedIMU(void * outBuffer, uint32_t bufferSize)
+{
+    if (!outBuffer || bufferSize < sizeof(DS4CalibratedIMU)) {
+        return false;
+    }
+    DS4CalibratedIMU calibrated;
+    ds4_calibrate_imu(&ivars->inputState.imu, &ivars->calibration, &calibrated);
+    memcpy(outBuffer, &calibrated, sizeof(DS4CalibratedIMU));
+    return true;
+}
+
+// MARK: - Battery IORegistry Properties
+
+void DS4HIDDevice::updateBatteryProperties()
+{
+    uint8_t level = ivars->inputState.battery.level;
+    bool charging = ivars->inputState.battery.cableConnected;
+    uint32_t maxVal = charging ? 11 : 8;
+    uint32_t percent = (level * 100) / (maxVal > 0 ? maxVal : 1);
+    if (percent > 100) percent = 100;
+
+    auto percentNum = OSNumber::withNumber(percent, 32);
+    auto chargingNum = OSNumber::withNumber(charging ? 1 : 0, 32);
+
+    if (percentNum) {
+        SetProperty("BatteryPercent", percentNum);
+        percentNum->release();
+    }
+    if (chargingNum) {
+        SetProperty("BatteryCharging", chargingNum);
+        chargingNum->release();
+    }
+
+    os_log(OS_LOG_DEFAULT, LOG_PREFIX "Battery: %u%% %s",
+           percent, charging ? "(charging)" : "(wireless)");
 }
 
 // MARK: - HID Report Overrides

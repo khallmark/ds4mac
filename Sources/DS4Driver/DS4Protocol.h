@@ -145,6 +145,52 @@ struct DS4OutputState {
     uint8_t flashOff;       // ~10ms units
 };
 
+// MARK: - Calibration Data (from Feature Report 0x02, 37 bytes)
+// Reference: docs/04-DS4-USB-Protocol.md Section 4.2, docs/08-Gyroscope-IMU-Feature.md Section 3
+
+#define DS4_CALIBRATION_REPORT_SIZE  37  // includes report ID byte
+
+struct DS4CalibrationData {
+    // Gyroscope bias (subtracted from raw readings)
+    int16_t gyroPitchBias;
+    int16_t gyroYawBias;
+    int16_t gyroRollBias;
+
+    // Gyroscope plus/minus reference points per axis
+    int16_t gyroPitchPlus;
+    int16_t gyroYawPlus;
+    int16_t gyroRollPlus;
+    int16_t gyroPitchMinus;
+    int16_t gyroYawMinus;
+    int16_t gyroRollMinus;
+
+    // Gyroscope speed references (shared across all axes)
+    int16_t gyroSpeedPlus;
+    int16_t gyroSpeedMinus;
+
+    // Accelerometer plus/minus 1g reference points per axis
+    int16_t accelXPlus;
+    int16_t accelXMinus;
+    int16_t accelYPlus;
+    int16_t accelYMinus;
+    int16_t accelZPlus;
+    int16_t accelZMinus;
+
+    // Whether all calibration denominators are non-zero
+    bool isValid;
+};
+
+// MARK: - Calibrated IMU State (physical units)
+
+struct DS4CalibratedIMU {
+    double gyroPitchDPS;   // degrees per second
+    double gyroYawDPS;
+    double gyroRollDPS;
+    double accelXG;        // g-force
+    double accelYG;
+    double accelZG;
+};
+
 // MARK: - Parsing and Building Functions
 
 #ifdef __cplusplus
@@ -167,6 +213,22 @@ void ds4_input_state_init(DS4InputState *state);
 
 /// Initialize a DS4OutputState with all zeros.
 void ds4_output_state_init(DS4OutputState *state);
+
+/// Initialize DS4CalibrationData with all zeros and isValid = false.
+void ds4_calibration_data_init(DS4CalibrationData *cal);
+
+/// Parse a 37-byte USB calibration feature report (Report ID 0x02) into DS4CalibrationData.
+/// Returns true on success. Validates report ID, length, and checks all denominators.
+/// Reference: DS4CalibrationData.swift parseUSB() — USB interleaved plus/minus layout.
+bool ds4_parse_usb_calibration(const uint8_t *data, uint32_t length,
+                                DS4CalibrationData *outCal);
+
+/// Calibrate raw IMU values using calibration data, producing physical units.
+/// Gyro → degrees/sec, Accel → g-force.
+/// If cal->isValid is false, falls back to BMI055 nominal conversion factors.
+/// Reference: DS4CalibrationData.swift calibrateGyro/calibrateAccel methods.
+void ds4_calibrate_imu(const DS4IMUState *raw, const DS4CalibrationData *cal,
+                        DS4CalibratedIMU *outCal);
 
 #ifdef __cplusplus
 }

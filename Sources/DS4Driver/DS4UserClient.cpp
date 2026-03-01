@@ -19,11 +19,13 @@
 // MARK: - Selector IDs (must match companion app's DriverCommunication.swift)
 
 enum DS4UserClientSelector : uint64_t {
-    kDS4SelectorSetLightBar    = 0,
-    kDS4SelectorSetRumble      = 1,
-    kDS4SelectorGetInputState  = 2,
-    kDS4SelectorGetBatteryState = 3,
-    kDS4SelectorCount          = 4,
+    kDS4SelectorSetLightBar       = 0,
+    kDS4SelectorSetRumble         = 1,
+    kDS4SelectorGetInputState     = 2,
+    kDS4SelectorGetBatteryState   = 3,
+    kDS4SelectorGetCalibrationData = 4,
+    kDS4SelectorGetCalibratedIMU  = 5,
+    kDS4SelectorCount             = 6,
 };
 
 // MARK: - Instance Variables
@@ -145,6 +147,59 @@ static kern_return_t sGetBatteryState(OSObject * target, void * reference,
     return kIOReturnSuccess;
 }
 
+static kern_return_t sGetCalibrationData(OSObject * target, void * reference,
+                                           IOUserClientMethodArguments * arguments)
+{
+    if (arguments->structureOutputMaximumSize < sizeof(DS4CalibrationData)) {
+        return kIOReturnBadArgument;
+    }
+
+    auto uc = OSDynamicCast(DS4UserClient, target);
+    if (!uc || !uc->ivars->device) {
+        return kIOReturnNotReady;
+    }
+
+    DS4CalibrationData cal;
+    ds4_calibration_data_init(&cal);
+    if (!uc->ivars->device->copyCalibrationData(&cal, sizeof(DS4CalibrationData))) {
+        return kIOReturnNotReady;
+    }
+
+    auto data = OSData::withBytes(&cal, sizeof(DS4CalibrationData));
+    if (!data) {
+        return kIOReturnNoMemory;
+    }
+    arguments->structureOutput = data;
+
+    return kIOReturnSuccess;
+}
+
+static kern_return_t sGetCalibratedIMU(OSObject * target, void * reference,
+                                        IOUserClientMethodArguments * arguments)
+{
+    if (arguments->structureOutputMaximumSize < sizeof(DS4CalibratedIMU)) {
+        return kIOReturnBadArgument;
+    }
+
+    auto uc = OSDynamicCast(DS4UserClient, target);
+    if (!uc || !uc->ivars->device) {
+        return kIOReturnNotReady;
+    }
+
+    DS4CalibratedIMU calibrated;
+    if (!uc->ivars->device->copyCalibratedIMU(&calibrated, sizeof(DS4CalibratedIMU))) {
+        return kIOReturnNotReady;
+    }
+
+    auto data = OSData::withBytes(&calibrated, sizeof(DS4CalibratedIMU));
+    if (!data) {
+        return kIOReturnNoMemory;
+    }
+    arguments->structureOutput = data;
+
+    return kIOReturnSuccess;
+}
+
 // MARK: - Dispatch Table
 
 static const IOUserClientMethodDispatch sDS4Methods[kDS4SelectorCount] = {
@@ -183,6 +238,24 @@ static const IOUserClientMethodDispatch sDS4Methods[kDS4SelectorCount] = {
         .checkStructureInputSize = 0,
         .checkScalarOutputCount = 4,
         .checkStructureOutputSize = 0,
+    },
+    // Selector 4: getCalibrationData()
+    [kDS4SelectorGetCalibrationData] = {
+        .function = sGetCalibrationData,
+        .checkCompletionExists = false,
+        .checkScalarInputCount  = 0,
+        .checkStructureInputSize = 0,
+        .checkScalarOutputCount = 0,
+        .checkStructureOutputSize = sizeof(DS4CalibrationData),
+    },
+    // Selector 5: getCalibratedIMU()
+    [kDS4SelectorGetCalibratedIMU] = {
+        .function = sGetCalibratedIMU,
+        .checkCompletionExists = false,
+        .checkScalarInputCount  = 0,
+        .checkStructureInputSize = 0,
+        .checkScalarOutputCount = 0,
+        .checkStructureOutputSize = sizeof(DS4CalibratedIMU),
     },
 };
 

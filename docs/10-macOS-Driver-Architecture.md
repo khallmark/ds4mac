@@ -1598,10 +1598,13 @@ gantt
     IMU with calibration                         :p4a, after p3f, 2w
     Touchpad multitouch                          :p4b, after p3f, 1w
     Battery monitoring                           :p4c, after p3f, 1w
-    Audio passthrough                            :p4d, after p4a, 4w
+
+    section Phase 4.5: Audio Passthrough
+    Core Audio HAL plugin                        :p45a, after p4a, 2w
+    Speaker and microphone routing               :p45b, after p45a, 2w
 
     section Phase 5: Polish & Distribution
-    Extension install flow                       :p5a, after p4b, 2w
+    Extension install flow                       :p5a, after p45b, 2w
     Code signing and notarization                :p5b, after p5a, 2w
     System testing with real hardware            :p5c, after p5b, 2w
     Documentation and release                    :p5d, after p5c, 1w
@@ -1690,9 +1693,23 @@ gantt
 1. **IMU processing** with calibration data from Feature Report 0x02
 2. **Touchpad** multitouch coordinate tracking with touch ID management
 3. **Battery** level monitoring and charging state detection
-4. **Audio passthrough** via Core Audio HAL plugin (speaker and microphone on the DS4)
 
-### 9.6 Phase 5: Polish and Distribution
+### 9.6 Phase 4.5: Audio Passthrough
+
+**Goal:** Expose the DS4's built-in speaker and microphone as a macOS audio device.
+
+**Tasks:**
+
+1. **Core Audio HAL plugin** (or `AudioDriverKit` on macOS 12+) to register a virtual audio device
+2. **Speaker output routing** — route audio output to the DS4 speaker via output report bytes 11-31
+3. **Microphone input routing** — capture audio from the DS4 microphone
+4. **Volume and gain control** — expose volume/gain adjustments through the companion app and IOUserClient
+
+**Dependencies:** Requires Phase 4 completion — the dext must be stable with HID features before adding the audio subsystem.
+
+**Note:** This is architecturally distinct from the HID-based features in Phase 4. Audio requires a separate driver stack (Core Audio HAL plugin or AudioDriverKit), different Apple frameworks, and independent testing infrastructure.
+
+### 9.7 Phase 5: Polish and Distribution
 
 **Goal:** Prepare for public release.
 
@@ -1705,7 +1722,7 @@ gantt
 5. Package for distribution (DMG or PKG installer)
 6. Write user-facing documentation
 
-### 9.7 Legacy Code Mapping
+### 9.8 Legacy Code Mapping
 
 How each legacy file maps to the new architecture:
 
@@ -1718,7 +1735,7 @@ How each legacy file maps to the new architecture:
 | `DS4/dualshock4hid.h` | HID Report Descriptor (byte array) | `Sources/DS4Protocol/DS4ReportDescriptor.h` | Preserved and documented; shared between dext and protocol library |
 | `DS4/Info.plist` | KEXT matching configuration | `Sources/DS4Driver/Info.plist` | Rewritten for DEXT package type with modern matching keys |
 
-### 9.8 Key Architectural Changes from Legacy
+### 9.9 Key Architectural Changes from Legacy
 
 | Aspect | Legacy (KEXT) | Modern (DriverKit) |
 |---|---|---|

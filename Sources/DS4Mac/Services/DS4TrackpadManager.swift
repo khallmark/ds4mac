@@ -87,6 +87,9 @@ final class DS4TrackpadManager {
     // Pinch accumulation (same pattern — prevent Int32 truncation of small deltas)
     private var pinchAccum: Double = 0
 
+    // Scroll gesture phase tracking (for Apple Maps and other gesture-based apps)
+    private var scrollPhaseActive: Bool = false
+
     // Weak reference to the transport manager
     @ObservationIgnored
     private weak var transportManager: DS4TransportManager?
@@ -116,7 +119,12 @@ final class DS4TrackpadManager {
     private let scrollCommitThreshold: Double = 8.0
 
     /// Inter-finger distance change threshold to commit to pinch gesture.
-    private let pinchCommitThreshold: Double = 15.0
+    /// Higher value prevents accidental pinch during two-finger placement.
+    private let pinchCommitThreshold: Double = 40.0
+
+    /// Minimum samples before allowing pinch commit (~60ms at 250Hz).
+    /// Gives fingers time to settle after initial contact.
+    private let pinchMinSamples: Int = 15
 
     // MARK: - Init
 
@@ -277,7 +285,11 @@ final class DS4TrackpadManager {
         let distDelta = abs(dist - startDist)
 
         // Check if we can disambiguate
-        if distDelta > pinchCommitThreshold && distDelta > centerDelta * 0.7 {
+        // Pinch requires: enough samples (settle time), large distance change, AND
+        // distance change must clearly dominate over center-of-mass movement.
+        if sampleCount >= pinchMinSamples
+            && distDelta > pinchCommitThreshold
+            && distDelta > centerDelta * 2.0 {
             gestureState = .pinching(lastDistance: dist)
             currentGesture = .pinch
         } else if centerDelta > scrollCommitThreshold {
@@ -300,10 +312,12 @@ final class DS4TrackpadManager {
 
     private func handleScrolling(_ t0: DS4TouchFinger, _ t1: DS4TouchFinger, _ count: Int) {
         if count == 0 {
+            endScrollPhase()
             transitionToIdle()
             return
         }
         if count == 1 {
+            endScrollPhase()
             gestureState = .cursorTracking
             currentGesture = .cursor
             return
@@ -324,7 +338,8 @@ final class DS4TrackpadManager {
                 let distChange = abs(curDist - prevDist)
                 let centerMove = hypot(dx, dy)
 
-                if distChange > centerMove * 1.5 && distChange > 15.0 {
+                if distChange > centerMove * 1.5 && distChange > 25.0 {
+                    endScrollPhase()
                     gestureState = .pinching(lastDistance: curDist)
                     currentGesture = .pinch
                     return
@@ -413,11 +428,23 @@ final class DS4TrackpadManager {
         let newPos = CGPoint(x: currentPos.x + Double(intDX),
                              y: currentPos.y + Double(intDY))
 
+        // When a button is held, macOS expects mouseDragged events, not mouseMoved.
+        // Without this, window dragging appears frozen until mouseUp.
+        let mouseType: CGEventType
+        let mouseButton: CGMouseButton
+        if let held = clickedButton {
+            mouseType = held == .left ? .leftMouseDragged : .rightMouseDragged
+            mouseButton = held
+        } else {
+            mouseType = .mouseMoved
+            mouseButton = .left
+        }
+
         guard let event = CGEvent(
             mouseEventSource: eventSource,
-            mouseType: .mouseMoved,
+            mouseType: mouseType,
             mouseCursorPosition: newPos,
-            mouseButton: .left
+            mouseButton: mouseButton
         ) else { return }
 
         event.setIntegerValueField(.mouseEventDeltaX, value: Int64(intDX))
@@ -474,6 +501,32 @@ final class DS4TrackpadManager {
 
         // Mark as continuous (trackpad-style smooth scroll)
         event.setIntegerValueField(CGEventField(rawValue: 137)!, value: 1)
+
+        // kCGScrollWheelEventScrollPhase (field 99): began=1, changed=2, ended=4
+        // Apps like Apple Maps require these to recognize trackpad pan gestures.
+        let phase: Int64 = scrollPhaseActive ? 2 : 1
+        event.setIntegerValueField(CGEventField(rawValue: 99)!, value: phase)
+        scrollPhaseActive = true
+
+        event.post(tap: CGEventTapLocation.cghidEventTap)
+    }
+
+    /// Post a final scroll event with phase=ended so gesture-based apps complete the pan.
+    private func endScrollPhase() {
+        guard scrollPhaseActive else { return }
+        scrollPhaseActive = false
+
+        guard let event = CGEvent(
+            scrollWheelEvent2Source: eventSource,
+            units: .pixel,
+            wheelCount: 2,
+            wheel1: 0,
+            wheel2: 0,
+            wheel3: 0
+        ) else { return }
+
+        event.setIntegerValueField(CGEventField(rawValue: 137)!, value: 1)
+        event.setIntegerValueField(CGEventField(rawValue: 99)!, value: 4)  // ended
         event.post(tap: CGEventTapLocation.cghidEventTap)
     }
 
@@ -552,6 +605,7 @@ final class DS4TrackpadManager {
     }
 
     private func transitionToIdle() {
+        endScrollPhase()
         gestureState = .idle
         currentGesture = .idle
         accumulatedDX = 0
@@ -562,6 +616,7 @@ final class DS4TrackpadManager {
     }
 
     private func resetAllState() {
+        endScrollPhase()
         gestureState = .idle
         currentGesture = .idle
         activeTouchCount = 0

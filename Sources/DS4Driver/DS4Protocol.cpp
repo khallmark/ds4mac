@@ -5,6 +5,8 @@
 #include "DS4Protocol.h"
 
 #include <string.h>  // memset
+#include <stdlib.h>  // abs
+#include <math.h>    // fabs
 
 // MARK: - Little-Endian Helpers
 
@@ -158,4 +160,133 @@ void ds4_input_state_init(DS4InputState *state) {
 
 void ds4_output_state_init(DS4OutputState *state) {
     memset(state, 0, sizeof(DS4OutputState));
+}
+
+// MARK: - Calibration
+
+void ds4_calibration_data_init(DS4CalibrationData *cal) {
+    memset(cal, 0, sizeof(DS4CalibrationData));
+    cal->isValid = false;
+}
+
+bool ds4_parse_usb_calibration(const uint8_t *data, uint32_t length,
+                                DS4CalibrationData *outCal) {
+    if (!data || !outCal) {
+        return false;
+    }
+    if (length < DS4_CALIBRATION_REPORT_SIZE) {
+        return false;
+    }
+    if (data[0] != DS4_REPORT_ID_CALIBRATION) {
+        return false;
+    }
+
+    ds4_calibration_data_init(outCal);
+
+    // Gyro bias: bytes 1-6
+    outCal->gyroPitchBias = readInt16LE(data, 1);
+    outCal->gyroYawBias   = readInt16LE(data, 3);
+    outCal->gyroRollBias  = readInt16LE(data, 5);
+
+    // USB interleaved layout: plus/minus alternating per axis (bytes 7-18)
+    // Reference: DS4CalibrationData.swift parseUSB()
+    outCal->gyroPitchPlus  = readInt16LE(data, 7);
+    outCal->gyroPitchMinus = readInt16LE(data, 9);
+    outCal->gyroYawPlus    = readInt16LE(data, 11);
+    outCal->gyroYawMinus   = readInt16LE(data, 13);
+    outCal->gyroRollPlus   = readInt16LE(data, 15);
+    outCal->gyroRollMinus  = readInt16LE(data, 17);
+
+    // Gyro speed references: bytes 19-22
+    outCal->gyroSpeedPlus  = readInt16LE(data, 19);
+    outCal->gyroSpeedMinus = readInt16LE(data, 21);
+
+    // Accel references: bytes 23-34
+    outCal->accelXPlus  = readInt16LE(data, 23);
+    outCal->accelXMinus = readInt16LE(data, 25);
+    outCal->accelYPlus  = readInt16LE(data, 27);
+    outCal->accelYMinus = readInt16LE(data, 29);
+    outCal->accelZPlus  = readInt16LE(data, 31);
+    outCal->accelZMinus = readInt16LE(data, 33);
+
+    // Validate all denominators — use int32 to avoid overflow on subtraction
+    outCal->isValid =
+        ((int32_t)outCal->gyroPitchPlus - (int32_t)outCal->gyroPitchMinus) != 0 &&
+        ((int32_t)outCal->gyroYawPlus   - (int32_t)outCal->gyroYawMinus)   != 0 &&
+        ((int32_t)outCal->gyroRollPlus  - (int32_t)outCal->gyroRollMinus)  != 0 &&
+        ((int32_t)outCal->accelXPlus    - (int32_t)outCal->accelXMinus)    != 0 &&
+        ((int32_t)outCal->accelYPlus    - (int32_t)outCal->accelYMinus)    != 0 &&
+        ((int32_t)outCal->accelZPlus    - (int32_t)outCal->accelZMinus)    != 0;
+
+    return true;
+}
+
+/// Calibrate a single gyro axis: (raw - bias) * (speedPlus + speedMinus) / abs(plus - minus)
+/// abs() handles DS4v1 inverted yaw calibration (docs/08 Section 3.3.4).
+static double calibrateGyroAxis(int16_t raw, int16_t bias,
+                                 int16_t plus, int16_t minus,
+                                 int16_t speedPlus, int16_t speedMinus) {
+    int32_t denom = (int32_t)plus - (int32_t)minus;
+    if (denom == 0) {
+        return (double)raw;
+    }
+    int32_t speed2x  = (int32_t)speedPlus + (int32_t)speedMinus;
+    int32_t adjusted = (int32_t)raw - (int32_t)bias;
+    return (double)adjusted * (double)speed2x / (double)abs(denom);
+}
+
+/// Calibrate a single accel axis: (raw - center) / abs(halfRange)
+/// where center = (plus + minus) / 2, halfRange = (plus - minus) / 2.0
+static double calibrateAccelAxis(int16_t raw, int16_t plus, int16_t minus) {
+    int32_t range = (int32_t)plus - (int32_t)minus;
+    if (range == 0) {
+        return (double)raw;
+    }
+    int32_t center = ((int32_t)plus + (int32_t)minus) / 2;
+    double halfRange = fabs((double)range / 2.0);
+    return (double)((int32_t)raw - center) / halfRange;
+}
+
+void ds4_calibrate_imu(const DS4IMUState *raw, const DS4CalibrationData *cal,
+                        DS4CalibratedIMU *outCal) {
+    if (!raw || !cal || !outCal) {
+        return;
+    }
+
+    if (!cal->isValid) {
+        // Fallback: BMI055 nominal conversion factors
+        // Gyro: 2000 deg/s full scale / 32768 ≈ 1/16.4 deg/s per LSB
+        // Accel: 4g full scale / 32768 ≈ 1/8192 g per LSB
+        outCal->gyroPitchDPS = (double)raw->gyroPitch / 16.4;
+        outCal->gyroYawDPS   = (double)raw->gyroYaw   / 16.4;
+        outCal->gyroRollDPS  = (double)raw->gyroRoll  / 16.4;
+        outCal->accelXG      = (double)raw->accelX / 8192.0;
+        outCal->accelYG      = (double)raw->accelY / 8192.0;
+        outCal->accelZG      = (double)raw->accelZ / 8192.0;
+        return;
+    }
+
+    outCal->gyroPitchDPS = calibrateGyroAxis(
+        raw->gyroPitch, cal->gyroPitchBias,
+        cal->gyroPitchPlus, cal->gyroPitchMinus,
+        cal->gyroSpeedPlus, cal->gyroSpeedMinus);
+
+    outCal->gyroYawDPS = calibrateGyroAxis(
+        raw->gyroYaw, cal->gyroYawBias,
+        cal->gyroYawPlus, cal->gyroYawMinus,
+        cal->gyroSpeedPlus, cal->gyroSpeedMinus);
+
+    outCal->gyroRollDPS = calibrateGyroAxis(
+        raw->gyroRoll, cal->gyroRollBias,
+        cal->gyroRollPlus, cal->gyroRollMinus,
+        cal->gyroSpeedPlus, cal->gyroSpeedMinus);
+
+    outCal->accelXG = calibrateAccelAxis(
+        raw->accelX, cal->accelXPlus, cal->accelXMinus);
+
+    outCal->accelYG = calibrateAccelAxis(
+        raw->accelY, cal->accelYPlus, cal->accelYMinus);
+
+    outCal->accelZG = calibrateAccelAxis(
+        raw->accelZ, cal->accelZPlus, cal->accelZMinus);
 }

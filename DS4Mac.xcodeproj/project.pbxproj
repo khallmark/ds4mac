@@ -128,7 +128,7 @@
 		F27647B7FCBFF18A070C231A /* WeaponSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponSystem.swift; sourceTree = "<group>"; };
 		F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAC3B5D4EF9EA11EB77C953E /* SpaceCombatWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceCombatWindow.swift; sourceTree = "<group>"; };
-		"TEMP_90725EC8-E0A9-482C-A98B-B28ED11A0B80" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
+		"TEMP_A5192479-4953-40F2-A287-7F7C396D277C" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -461,7 +461,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
-				CODE_SIGN_ENTITLEMENTS = Sources/DS4Driver/DS4Driver.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "Sources/DS4Driver/DS4Driver-Release.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				DRIVERKIT_DEPLOYMENT_TARGET = 23.0;
 				HEADER_SEARCH_PATHS = (
@@ -490,7 +490,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
-				CODE_SIGN_ENTITLEMENTS = Sources/DS4Driver/DS4Driver.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "Sources/DS4Driver/DS4Driver-Debug.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				DRIVERKIT_DEPLOYMENT_TARGET = 23.0;
 				HEADER_SEARCH_PATHS = (
@@ -576,7 +576,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = DS4Mac.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "DS4Mac-Debug.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = Sources/DS4Mac/Info.plist;
@@ -595,7 +595,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = DS4Mac.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "DS4Mac-Release.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = Sources/DS4Mac/Info.plist;

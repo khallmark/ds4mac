@@ -58,6 +58,20 @@ public:
     // Uses void* because the IIG parser cannot resolve custom struct types.
     // Note: Not synchronized — caller accepts benign races on diagnostic reads.
     virtual bool copyInputState(void * outBuffer, uint32_t bufferSize) LOCALONLY;
+
+    // IMU Calibration — reads Feature Report 0x02 via USB control transfer.
+    // Called once during Start() and stored in IVars. Failure is non-fatal
+    // (fallback BMI055 nominal values used).
+    virtual kern_return_t readCalibrationData() LOCALONLY;
+
+    // Copy calibration data into caller-provided buffer (sizeof DS4CalibrationData).
+    virtual bool copyCalibrationData(void * outBuffer, uint32_t bufferSize) LOCALONLY;
+
+    // Compute calibrated IMU values and copy into caller-provided buffer (sizeof DS4CalibratedIMU).
+    virtual bool copyCalibratedIMU(void * outBuffer, uint32_t bufferSize) LOCALONLY;
+
+    // Update IORegistry battery properties when level or charging state changes.
+    virtual void updateBatteryProperties() LOCALONLY;
 };
 
 #endif /* DS4HIDDevice_h */

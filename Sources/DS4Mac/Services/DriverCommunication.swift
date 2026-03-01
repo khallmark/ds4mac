@@ -21,10 +21,12 @@ final class DriverCommunication {
     // MARK: - Selector IDs (must match DS4UserClient.cpp)
 
     private enum Selector {
-        static let setLightBar: UInt32    = 0
-        static let setRumble: UInt32      = 1
-        static let getInputState: UInt32  = 2
-        static let getBatteryState: UInt32 = 3
+        static let setLightBar: UInt32        = 0
+        static let setRumble: UInt32          = 1
+        static let getInputState: UInt32      = 2
+        static let getBatteryState: UInt32    = 3
+        static let getCalibrationData: UInt32 = 4
+        static let getCalibratedIMU: UInt32   = 5
     }
 
     /// The IOUserClient connection to the dext.
@@ -166,6 +168,58 @@ final class DriverCommunication {
         }
         guard result == KERN_SUCCESS else {
             throw DriverError.methodFailed(Selector.getInputState, result)
+        }
+
+        return Array(outputBuffer.prefix(outputSize))
+    }
+
+    /// Read the IMU calibration data from the dext.
+    /// Returns raw bytes of the C++ DS4CalibrationData struct.
+    func getCalibrationData() throws -> [UInt8] {
+        guard isConnected else { throw DriverError.notConnected }
+
+        // DS4CalibrationData is ~39 bytes (17 × int16 + bool + padding); use 64 as safe bound.
+        var outputSize = 64
+        var outputBuffer = [UInt8](repeating: 0, count: outputSize)
+
+        let result = outputBuffer.withUnsafeMutableBytes { ptr -> kern_return_t in
+            IOConnectCallStructMethod(
+                connection,
+                Selector.getCalibrationData,
+                nil,
+                0,
+                ptr.baseAddress,
+                &outputSize
+            )
+        }
+        guard result == KERN_SUCCESS else {
+            throw DriverError.methodFailed(Selector.getCalibrationData, result)
+        }
+
+        return Array(outputBuffer.prefix(outputSize))
+    }
+
+    /// Read the current calibrated IMU values (degrees/sec + g-force) from the dext.
+    /// Returns raw bytes of the C++ DS4CalibratedIMU struct (6 doubles = 48 bytes).
+    func getCalibratedIMU() throws -> [UInt8] {
+        guard isConnected else { throw DriverError.notConnected }
+
+        // DS4CalibratedIMU is 6 × double = 48 bytes; use 64 as safe bound.
+        var outputSize = 64
+        var outputBuffer = [UInt8](repeating: 0, count: outputSize)
+
+        let result = outputBuffer.withUnsafeMutableBytes { ptr -> kern_return_t in
+            IOConnectCallStructMethod(
+                connection,
+                Selector.getCalibratedIMU,
+                nil,
+                0,
+                ptr.baseAddress,
+                &outputSize
+            )
+        }
+        guard result == KERN_SUCCESS else {
+            throw DriverError.methodFailed(Selector.getCalibratedIMU, result)
         }
 
         return Array(outputBuffer.prefix(outputSize))

@@ -60,11 +60,15 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.ds4mac.app
         PRODUCT_NAME: DS4Mac
         INFOPLIST_FILE: Sources/DS4Mac/Info.plist
-        CODE_SIGN_ENTITLEMENTS: DS4Mac.entitlements
         # Enable SystemExtensions framework usage
         SYSTEM_EXTENSION_API_USAGE: YES
         # Required for embedding dexts
         COPY_PHASE_STRIP: NO
+      configs:
+        Debug:
+          CODE_SIGN_ENTITLEMENTS: DS4Mac-Debug.entitlements
+        Release:
+          CODE_SIGN_ENTITLEMENTS: DS4Mac-Release.entitlements
 
   # ────────────────────────────────────────────────
   # DS4Driver — DriverKit System Extension (C++)
@@ -83,7 +87,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.ds4mac.driver.DS4Driver
         PRODUCT_NAME: com.ds4mac.driver.DS4Driver
         INFOPLIST_FILE: Sources/DS4Driver/Info.plist
-        CODE_SIGN_ENTITLEMENTS: Sources/DS4Driver/DS4Driver.entitlements
         # Override SDK to DriverKit (xcodegen defaults to macosx for macOS platform)
         SDKROOT: driverkit
         SUPPORTED_PLATFORMS: driverkit
@@ -100,3 +103,8 @@ targets:
           - "-framework DriverKit"
           - "-framework HIDDriverKit"
           - "-framework USBDriverKit"
+      configs:
+        Debug:
+          CODE_SIGN_ENTITLEMENTS: Sources/DS4Driver/DS4Driver-Debug.entitlements
+        Release:
+          CODE_SIGN_ENTITLEMENTS: Sources/DS4Driver/DS4Driver-Release.entitlements

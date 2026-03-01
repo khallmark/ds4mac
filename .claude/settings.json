@@ -6,7 +6,8 @@
       "Bash(xcodegen generate:*)",
       "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild build:*)",
       "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild:*)",
-      "Read(//Applications/Xcode.app/Contents/Developer/Platforms/DriverKit.platform/Developer/SDKs/**)"
+      "Read(//Applications/Xcode.app/Contents/Developer/Platforms/DriverKit.platform/Developer/SDKs/**)",
+      "Bash(xcodebuild:*)"
     ]
   }
 }
