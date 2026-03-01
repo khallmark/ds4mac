@@ -143,7 +143,7 @@ struct MonitorView: View {
                     if useCalibrated, let cal {
                         GridRow {
                             Text("Gyro:")
-                            Text("P=\(fd(cal.calibrateGyro(axis: .pitch, rawValue: imu.gyroPitch)))  Y=\(fd(cal.calibrateGyro(axis: .yaw, rawValue: imu.gyroYaw)))  R=\(fd(cal.calibrateGyro(axis: .roll, rawValue: imu.gyroRoll))) deg/s")
+                            Text("P=\(fd(gyroDeadZone(cal.calibrateGyro(axis: .pitch, rawValue: imu.gyroPitch))))  Y=\(fd(gyroDeadZone(cal.calibrateGyro(axis: .yaw, rawValue: imu.gyroYaw))))  R=\(fd(gyroDeadZone(cal.calibrateGyro(axis: .roll, rawValue: imu.gyroRoll)))) deg/s")
                         }
                         GridRow {
                             Text("Accel:")
@@ -357,6 +357,14 @@ struct MonitorView: View {
     /// Format Int16 as right-aligned 6-char string
     private func f6(_ val: Int16) -> String {
         String(format: "%6d", val)
+    }
+
+    /// Display dead zone for calibrated gyro (deg/s). Matches OrientationFilter threshold.
+    private let displayGyroDeadZone: Double = 0.5
+
+    /// Zero out gyro values below dead zone threshold for cleaner display at rest.
+    private func gyroDeadZone(_ val: Double) -> Double {
+        abs(val) < displayGyroDeadZone ? 0.0 : val
     }
 
     /// Format Double as deg/s with 1 decimal place, right-aligned 7 chars

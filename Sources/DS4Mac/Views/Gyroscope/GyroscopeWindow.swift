@@ -40,7 +40,7 @@ struct GyroscopeWindow: View {
         .onChange(of: manager.inputState.imu) { _, newIMU in
             // Drive the sensor fusion filter at ~30 Hz (manager's throttle rate)
             orientationFilter.update(from: newIMU)
-            sceneController.shipNode.simdOrientation = orientationFilter.orientation
+            sceneController.shipNode.simdOrientation = orientationFilter.displayOrientation
         }
         .onAppear {
             orientationFilter.calibrationData = manager.calibrationData
@@ -66,10 +66,20 @@ struct GyroscopeWindow: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
 
-            // Reset orientation to neutral
+            // Set current position as "level" (zeroes out desk tilt)
+            Button {
+                orientationFilter.setLevel()
+                sceneController.shipNode.simdOrientation = orientationFilter.displayOrientation
+            } label: {
+                Label("Set Level", systemImage: "level")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            // Full reset: identity orientation + clear bias estimates
             Button {
                 orientationFilter.reset()
-                sceneController.shipNode.simdOrientation = orientationFilter.orientation
+                sceneController.shipNode.simdOrientation = orientationFilter.displayOrientation
             } label: {
                 Label("Reset", systemImage: "arrow.counterclockwise")
             }
@@ -83,7 +93,7 @@ struct GyroscopeWindow: View {
 
     @ViewBuilder
     private var eulerReadout: some View {
-        let euler = orientationFilter.orientation.eulerAnglesZYX
+        let euler = orientationFilter.displayOrientation.eulerAnglesZYX
         VStack(alignment: .trailing, spacing: 2) {
             Text("Pitch: \(formatDegrees(euler.x))")
             Text("Yaw:   \(formatDegrees(euler.y))")

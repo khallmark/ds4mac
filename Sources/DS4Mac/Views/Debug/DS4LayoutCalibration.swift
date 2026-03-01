@@ -24,6 +24,9 @@ final class DS4LayoutCalibration {
     var touchpad = DS4Layout.touchpadCenter
     var centerButtons = CGPoint(x: 195, y: 100)
 
+    // Shared button spacing (distance from center to each d-pad arm / face button)
+    var buttonSpacing = DS4Layout.buttonSpacing
+
     // CenterButtonsOverlay internal offsets (relative to centerButtons position)
     var shareOffset = CGSize(width: -47, height: -24)
     var optionsOffset = CGSize(width: 47, height: -24)
@@ -43,6 +46,7 @@ final class DS4LayoutCalibration {
         rightStick = DS4Layout.rightStickCenter
         touchpad = DS4Layout.touchpadCenter
         centerButtons = CGPoint(x: 195, y: 100)
+        buttonSpacing = DS4Layout.buttonSpacing
         shareOffset = CGSize(width: -47, height: -24)
         optionsOffset = CGSize(width: 47, height: -24)
         psOffset = CGSize(width: 0, height: 40)
@@ -61,6 +65,7 @@ final class DS4LayoutCalibration {
         static let leftStickCenter = CGPoint(x: \(Int(leftStick.x)), y: \(Int(leftStick.y)))
         static let rightStickCenter = CGPoint(x: \(Int(rightStick.x)), y: \(Int(rightStick.y)))
         static let touchpadCenter = CGPoint(x: \(Int(touchpad.x)), y: \(Int(touchpad.y)))
+        static let buttonSpacing: CGFloat = \(Int(buttonSpacing))
 
         // CenterButtonsOverlay anchor
         .position(x: \(Int(centerButtons.x)), y: \(Int(centerButtons.y)))

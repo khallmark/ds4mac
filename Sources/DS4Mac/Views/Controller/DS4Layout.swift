@@ -34,12 +34,13 @@ enum DS4Layout {
     // D-Pad
     static let dpadCenter = CGPoint(x: 93, y: 84)
     static let dpadArmSize: CGFloat = 12
-    static let dpadGap: CGFloat = 1.5
 
     // Face buttons (triangle/circle/cross/square)
     static let faceButtonCenter = CGPoint(x: 302, y: 71)
-    static let faceButtonSpacing: CGFloat = 18
     static let faceButtonRadius: CGFloat = 8
+
+    // Shared spacing: distance from center point to each button/arm for both d-pad and face buttons
+    static let buttonSpacing: CGFloat = 18
 
     // Analog sticks
     static let leftStickCenter = CGPoint(x: 142, y: 117)

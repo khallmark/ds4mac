@@ -51,6 +51,18 @@ struct OverlayDebugPanel: View {
 
                     Divider().padding(.vertical, 4)
 
+                    Text("Button Spacing")
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+
+                    axisRow("sp", value: $cal.buttonSpacing, range: 4...40)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 2)
+
+                    Divider().padding(.vertical, 4)
+
                     Text("Center Button Offsets")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)

@@ -45,6 +45,7 @@ struct StickOverlay: View {
 /// D-pad glow highlights. Shows all 4 arms in debug mode, only active direction otherwise.
 struct DPadOverlay: View {
     let direction: DS4DPadDirection
+    var spacing: CGFloat = DS4Layout.buttonSpacing
     var debug = false
 
     private var upActive: Bool {
@@ -61,7 +62,6 @@ struct DPadOverlay: View {
     }
 
     private let arm = DS4Layout.dpadArmSize
-    private let gap = DS4Layout.dpadGap
 
     var body: some View {
         ZStack {
@@ -74,19 +74,19 @@ struct DPadOverlay: View {
 
             if upActive {
                 glowPill()
-                    .offset(y: -(arm + gap))
+                    .offset(y: -spacing)
             }
             if downActive {
                 glowPill()
-                    .offset(y: arm + gap)
+                    .offset(y: spacing)
             }
             if leftActive {
                 glowPill()
-                    .offset(x: -(arm + gap))
+                    .offset(x: -spacing)
             }
             if rightActive {
                 glowPill()
-                    .offset(x: arm + gap)
+                    .offset(x: spacing)
             }
         }
     }
@@ -104,9 +104,9 @@ struct DPadOverlay: View {
 /// Face button glow dots. Each button shows its signature color when pressed.
 struct FaceButtonOverlay: View {
     let buttons: DS4Buttons
+    var spacing: CGFloat = DS4Layout.buttonSpacing
     var debug = false
 
-    private let spacing = DS4Layout.faceButtonSpacing
     private let diameter = DS4Layout.faceButtonRadius * 2
 
     var body: some View {

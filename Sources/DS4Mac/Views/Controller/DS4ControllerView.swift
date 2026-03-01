@@ -63,11 +63,11 @@ struct DS4ControllerView: View {
             .position(cal.r2)
 
         // D-Pad
-        DPadOverlay(direction: state.dpad, debug: dbg)
+        DPadOverlay(direction: state.dpad, spacing: cal.buttonSpacing, debug: dbg)
             .position(cal.dpad)
 
         // Face buttons
-        FaceButtonOverlay(buttons: state.buttons, debug: dbg)
+        FaceButtonOverlay(buttons: state.buttons, spacing: cal.buttonSpacing, debug: dbg)
             .position(cal.faceButtons)
 
         // Analog sticks
