@@ -84,6 +84,22 @@ kern_return_t DS4HIDDevice::Start_Impl(IOService * provider)
     }
     ivars->interface->retain();
 
+    // Read the product ID from the provider's properties so that
+    // newDeviceDescription() returns the correct PID for V1 vs V2.
+    // DriverKit's IOService only has CopyProperties (all props), not CopyProperty (single key).
+    OSDictionary * props = nullptr;
+    if (provider->CopyProperties(&props) == kIOReturnSuccess && props) {
+        auto pidNum = OSDynamicCast(OSNumber, props->getObject("idProduct"));
+        if (pidNum) {
+            ivars->productID = static_cast<uint16_t>(pidNum->unsigned32BitValue() & 0xFFFF);
+            os_log(OS_LOG_DEFAULT, LOG_PREFIX "Matched product ID: 0x%04x", ivars->productID);
+        }
+        OSSafeReleaseNULL(props);
+    }
+    if (ivars->productID == 0) {
+        ivars->productID = DS4_V1_PRODUCT_ID;
+    }
+
     // Configure USB endpoints and start polling
     ret = configureDevice();
     if (ret != kIOReturnSuccess) {
@@ -142,17 +158,24 @@ OSDictionary * DS4HIDDevice::newDeviceDescription()
 
     // These properties allow IOHIDFamily and GameController.framework to
     // identify this device as a Sony DualShock 4 (GCDualShockGamepad).
+    uint32_t pid = (ivars && ivars->productID != 0)
+                     ? ivars->productID : DS4_V1_PRODUCT_ID;
     auto vendorID  = OSNumber::withNumber(DS4_VENDOR_ID, 32);
-    auto productID = OSNumber::withNumber(DS4_V1_PRODUCT_ID, 32);
+    auto productID = OSNumber::withNumber(pid, 32);
     auto transport = OSString::withCString("USB");
     auto manufacturer = OSString::withCString("Sony Computer Entertainment");
     auto product   = OSString::withCString("Wireless Controller");
 
-    if (vendorID)     { dict->setObject("VendorID", vendorID);         vendorID->release(); }
-    if (productID)    { dict->setObject("ProductID", productID);       productID->release(); }
-    if (transport)    { dict->setObject("Transport", transport);       transport->release(); }
-    if (manufacturer) { dict->setObject("Manufacturer", manufacturer); manufacturer->release(); }
-    if (product)      { dict->setObject("Product", product);           product->release(); }
+    // IOUserClientClass tells the DriverKit runtime which class to instantiate
+    // when the companion app calls IOServiceOpen() on this service.
+    auto userClientClass = OSString::withCString("DS4UserClient");
+
+    if (vendorID)        { dict->setObject("VendorID", vendorID);               vendorID->release(); }
+    if (productID)       { dict->setObject("ProductID", productID);             productID->release(); }
+    if (transport)       { dict->setObject("Transport", transport);             transport->release(); }
+    if (manufacturer)    { dict->setObject("Manufacturer", manufacturer);       manufacturer->release(); }
+    if (product)         { dict->setObject("Product", product);                 product->release(); }
+    if (userClientClass) { dict->setObject("IOUserClientClass", userClientClass); userClientClass->release(); }
 
     return dict;
 }
@@ -385,6 +408,20 @@ kern_return_t DS4HIDDevice::sendOutputReport(const uint8_t * data, uint32_t leng
     }
 
     return ret;
+}
+
+// MARK: - State Accessor
+
+bool DS4HIDDevice::copyInputState(void * outBuffer, uint32_t bufferSize)
+{
+    if (!outBuffer || bufferSize < sizeof(DS4InputState)) {
+        return false;
+    }
+    // TODO: Add os_unfair_lock if contention with inputReportComplete becomes an issue.
+    // For now, this copies a snapshot that may be mid-update — acceptable for
+    // diagnostic reads via IOUserClient (getInputState/getBatteryState selectors).
+    memcpy(outBuffer, &ivars->inputState, sizeof(DS4InputState));
+    return true;
 }
 
 // MARK: - HID Report Overrides

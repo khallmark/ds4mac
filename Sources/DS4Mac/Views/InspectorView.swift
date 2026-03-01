@@ -38,6 +38,8 @@ struct InspectorView: View {
                         LightBarView()
                     case .rumble:
                         RumbleView()
+                    case .trackpad:
+                        TrackpadView()
                     case .data:
                         MonitorView()
                     case .settings:

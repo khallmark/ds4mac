@@ -21,7 +21,7 @@ struct StickOverlay: View {
         ZStack {
             if pressed {
                 Circle()
-                    .fill(Color.accentColor.opacity(debug ? 0.6 : 0.45))
+                    .fill(Color.accentColor.opacity(debug ? 0.6 : 0.65))
                     .frame(width: DS4Layout.stickWellRadius * 2,
                            height: DS4Layout.stickWellRadius * 2)
                     .blur(radius: debug ? 0 : 8)
@@ -93,7 +93,7 @@ struct DPadOverlay: View {
 
     private func glowPill() -> some View {
         RoundedRectangle(cornerRadius: 4)
-            .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
+            .fill(Color.accentColor.opacity(debug ? 0.8 : 0.7))
             .frame(width: arm, height: arm)
             .blur(radius: debug ? 0 : 4)
     }
@@ -132,10 +132,10 @@ struct FaceButtonOverlay: View {
 
     private func glowDot(color: Color) -> some View {
         Circle()
-            .fill(color.opacity(debug ? 0.9 : 0.65))
+            .fill(color.opacity(debug ? 0.9 : 0.7))
             .frame(width: diameter, height: diameter)
             .blur(radius: debug ? 0 : 6)
-            .shadow(color: debug ? .clear : color.opacity(0.5), radius: 8)
+            .shadow(color: debug ? .clear : color.opacity(0.6), radius: 8)
     }
 }
 
@@ -149,7 +149,7 @@ struct ShoulderOverlay: View {
     var body: some View {
         if active {
             Capsule()
-                .fill(Color.accentColor.opacity(debug ? 0.8 : 0.65))
+                .fill(Color.accentColor.opacity(debug ? 0.8 : 0.7))
                 .frame(width: DS4Layout.shoulderButtonSize.width,
                        height: DS4Layout.shoulderButtonSize.height)
                 .blur(radius: debug ? 0 : 5)
@@ -169,7 +169,7 @@ struct TriggerOverlay: View {
     var body: some View {
         if value > 0 {
             Capsule()
-                .fill(Color.accentColor.opacity(debug ? 0.8 : Double(fraction) * 0.75))
+                .fill(Color.accentColor.opacity(debug ? 0.8 : 0.3 + Double(fraction) * 0.55))
                 .frame(width: debug ? DS4Layout.triggerSize.width : max(4, fraction * DS4Layout.triggerSize.width),
                        height: DS4Layout.triggerSize.height)
                 .blur(radius: debug ? 0 : 3)
@@ -200,23 +200,23 @@ struct CenterButtonsOverlay: View {
 
             if buttons.share {
                 Capsule()
-                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
-                    .frame(width: 26, height: 9)
+                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.7))
+                    .frame(width: 9, height: 26)
                     .blur(radius: debug ? 0 : 3)
                     .offset(share)
             }
 
             if buttons.options {
                 Capsule()
-                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
-                    .frame(width: 26, height: 9)
+                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.7))
+                    .frame(width: 9, height: 26)
                     .blur(radius: debug ? 0 : 3)
                     .offset(options)
             }
 
             if buttons.ps {
                 Circle()
-                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
+                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.7))
                     .frame(width: 12, height: 12)
                     .blur(radius: debug ? 0 : 4)
                     .offset(ps)
@@ -263,7 +263,10 @@ struct TouchpadDotsOverlay: View {
     let touch0: DS4TouchFinger
     let touch1: DS4TouchFinger
     var padSize: CGSize = DS4Layout.touchpadSize
+    var clicked = false
     var debug = false
+
+    @State private var clickFlash = false
 
     var body: some View {
         ZStack {
@@ -272,6 +275,14 @@ struct TouchpadDotsOverlay: View {
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(Color.accentColor.opacity(0.5), lineWidth: 1)
                     .frame(width: padSize.width, height: padSize.height)
+            }
+
+            // Click flash overlay
+            if clickFlash || clicked && debug {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.accentColor.opacity(debug ? 0.4 : 0.35))
+                    .frame(width: padSize.width, height: padSize.height)
+                    .blur(radius: debug ? 0 : 4)
             }
 
             if touch0.active {
@@ -283,6 +294,15 @@ struct TouchpadDotsOverlay: View {
         }
         .frame(width: padSize.width, height: padSize.height)
         .clipped()
+        .onChange(of: clicked) { _, pressed in
+            if pressed {
+                clickFlash = true
+            } else {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    clickFlash = false
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -292,7 +312,7 @@ struct TouchpadDotsOverlay: View {
 
         ZStack {
             Circle()
-                .fill(color.opacity(debug ? 0.5 : 0.4))
+                .fill(color.opacity(debug ? 0.5 : 0.65))
                 .frame(width: 20, height: 20)
 
             Circle()

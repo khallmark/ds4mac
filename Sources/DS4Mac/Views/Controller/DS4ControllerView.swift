@@ -85,6 +85,7 @@ struct DS4ControllerView: View {
             touch0: state.touchpad.touch0,
             touch1: state.touchpad.touch1,
             padSize: cal.touchpadSize,
+            clicked: state.buttons.touchpadClick,
             debug: dbg
         )
         .position(cal.touchpad)

@@ -61,6 +61,12 @@ public final class DS4TransportManager {
     /// Timer to flush the most recent pending state on the throttle interval.
     private var displayTimer: Timer?
 
+    /// High-frequency callback fired for every parsed input report (~250 Hz).
+    /// Used by DS4TrackpadManager for low-latency cursor tracking.
+    /// Runs on the MainActor since the transport event handler dispatches there.
+    @ObservationIgnored
+    public var onRawInputState: ((DS4InputState) -> Void)?
+
     /// Flag set from transport callback, read by timer to avoid unnecessary Task allocation.
     /// Deliberately nonisolated — racy reads are acceptable (the authoritative check is in flushPendingState).
     @ObservationIgnored
@@ -205,6 +211,8 @@ public final class DS4TransportManager {
     private func parseAndThrottleReport(_ bytes: [UInt8]) {
         do {
             let state = try DS4InputReportParser.parse(bytes)
+            // Fire raw callback BEFORE throttling (full ~250 Hz rate)
+            onRawInputState?(state)
             pendingState = state
             hasPendingState = true
         } catch {

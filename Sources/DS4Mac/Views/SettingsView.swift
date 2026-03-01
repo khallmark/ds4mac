@@ -5,8 +5,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(ExtensionManager.self) var extensionManager
+    @Environment(DriverCommunication.self) var driverComm
     @AppStorage("autoConnect") private var autoConnect = false
-    @AppStorage("useFallbackTransport") private var useFallbackTransport = false
 
     var body: some View {
         Form {
@@ -56,8 +56,22 @@ struct SettingsView: View {
                 .foregroundStyle(.blue)
             }
 
-            Toggle("Use fallback transport (IOHIDManager)", isOn: $useFallbackTransport)
-                .help("When enabled, the app connects directly via IOHIDManager instead of through the system extension. Useful if the driver is not installed.")
+            HStack {
+                Label("Driver IPC", systemImage: driverComm.isConnected ? "link" : "link.slash")
+                Spacer()
+                Text(driverComm.isConnected ? "Connected" : "Disconnected")
+                    .foregroundStyle(driverComm.isConnected ? .green : .secondary)
+            }
+
+            Button(driverComm.isConnected ? "Disconnect IPC" : "Connect IPC") {
+                if driverComm.isConnected {
+                    driverComm.disconnect()
+                } else {
+                    try? driverComm.connect()
+                }
+            }
+            .disabled(extensionManager.state != .active && !driverComm.isConnected)
+            .help("Opens a direct IOUserClient channel to the driver for LED and rumble commands. Requires the driver extension to be installed and active.")
         }
     }
 
@@ -73,7 +87,7 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section("About") {
-            LabeledContent("Version", value: "0.2.0")
+            LabeledContent("Version", value: "0.3.0")
             LabeledContent("Phase", value: "3 — DriverKit Extension")
         }
     }

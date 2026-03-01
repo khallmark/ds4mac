@@ -37,9 +37,13 @@ struct DS4UserClient_IVars {
 static kern_return_t sSetLightBar(OSObject * target, void * reference,
                                     IOUserClientMethodArguments * arguments)
 {
-    // Expect 3 scalar inputs: R, G, B (0-255 each)
     if (arguments->scalarInputCount < 3) {
         return kIOReturnBadArgument;
+    }
+
+    auto uc = OSDynamicCast(DS4UserClient, target);
+    if (!uc || !uc->ivars->device) {
+        return kIOReturnNotReady;
     }
 
     uint8_t r = (uint8_t)(arguments->scalarInput[0] & 0xFF);
@@ -48,7 +52,6 @@ static kern_return_t sSetLightBar(OSObject * target, void * reference,
 
     os_log(OS_LOG_DEFAULT, LOG_PREFIX "setLightBar(%u, %u, %u)", r, g, b);
 
-    // Build and send output report with LED color
     DS4OutputState outputState;
     ds4_output_state_init(&outputState);
     outputState.ledRed   = r;
@@ -58,18 +61,19 @@ static kern_return_t sSetLightBar(OSObject * target, void * reference,
     uint8_t report[DS4_USB_OUTPUT_REPORT_SIZE];
     ds4_build_usb_output_report(&outputState, report);
 
-    // TODO: Send report via DS4HIDDevice when cross-referencing is set up
-    // For now, the device reference will be populated in Start()
-
-    return kIOReturnSuccess;
+    return uc->ivars->device->sendOutputReport(report, DS4_USB_OUTPUT_REPORT_SIZE);
 }
 
 static kern_return_t sSetRumble(OSObject * target, void * reference,
                                   IOUserClientMethodArguments * arguments)
 {
-    // Expect 2 scalar inputs: heavy motor, light motor (0-255 each)
     if (arguments->scalarInputCount < 2) {
         return kIOReturnBadArgument;
+    }
+
+    auto uc = OSDynamicCast(DS4UserClient, target);
+    if (!uc || !uc->ivars->device) {
+        return kIOReturnNotReady;
     }
 
     uint8_t heavy = (uint8_t)(arguments->scalarInput[0] & 0xFF);
@@ -85,24 +89,27 @@ static kern_return_t sSetRumble(OSObject * target, void * reference,
     uint8_t report[DS4_USB_OUTPUT_REPORT_SIZE];
     ds4_build_usb_output_report(&outputState, report);
 
-    // TODO: Send report via DS4HIDDevice
-
-    return kIOReturnSuccess;
+    return uc->ivars->device->sendOutputReport(report, DS4_USB_OUTPUT_REPORT_SIZE);
 }
 
 static kern_return_t sGetInputState(OSObject * target, void * reference,
                                       IOUserClientMethodArguments * arguments)
 {
-    // Return input state as struct output
     if (arguments->structureOutputMaximumSize < sizeof(DS4InputState)) {
         return kIOReturnBadArgument;
     }
 
-    // TODO: Copy current input state from DS4HIDDevice
+    auto uc = OSDynamicCast(DS4UserClient, target);
+    if (!uc || !uc->ivars->device) {
+        return kIOReturnNotReady;
+    }
+
     DS4InputState state;
     ds4_input_state_init(&state);
+    if (!uc->ivars->device->copyInputState(&state, sizeof(DS4InputState))) {
+        return kIOReturnNotReady;
+    }
 
-    // Create OSData with the state bytes and assign to structureOutput
     auto data = OSData::withBytes(&state, sizeof(DS4InputState));
     if (!data) {
         return kIOReturnNoMemory;
@@ -115,16 +122,25 @@ static kern_return_t sGetInputState(OSObject * target, void * reference,
 static kern_return_t sGetBatteryState(OSObject * target, void * reference,
                                         IOUserClientMethodArguments * arguments)
 {
-    // Return battery state as 4 scalar outputs: level, cable, headphones, mic
     if (arguments->scalarOutputCount < 4) {
         return kIOReturnBadArgument;
     }
 
-    // TODO: Read from DS4HIDDevice's current state
-    arguments->scalarOutput[0] = 0;      // battery level
-    arguments->scalarOutput[1] = 0;      // cable connected
-    arguments->scalarOutput[2] = 0;      // headphones
-    arguments->scalarOutput[3] = 0;      // microphone
+    auto uc = OSDynamicCast(DS4UserClient, target);
+    if (!uc || !uc->ivars->device) {
+        return kIOReturnNotReady;
+    }
+
+    DS4InputState state;
+    ds4_input_state_init(&state);
+    if (!uc->ivars->device->copyInputState(&state, sizeof(DS4InputState))) {
+        return kIOReturnNotReady;
+    }
+
+    arguments->scalarOutput[0] = state.battery.level;
+    arguments->scalarOutput[1] = state.battery.cableConnected ? 1 : 0;
+    arguments->scalarOutput[2] = state.battery.headphones ? 1 : 0;
+    arguments->scalarOutput[3] = state.battery.microphone ? 1 : 0;
 
     return kIOReturnSuccess;
 }

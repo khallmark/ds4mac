@@ -53,6 +53,11 @@ public:
     virtual kern_return_t startInputPolling() LOCALONLY;
     virtual void          processInputReport(const uint8_t * data, uint32_t length) LOCALONLY;
     virtual kern_return_t sendOutputReport(const uint8_t * data, uint32_t length) LOCALONLY;
+
+    // Copy the current parsed input state into a caller-provided buffer.
+    // Uses void* because the IIG parser cannot resolve custom struct types.
+    // Note: Not synchronized — caller accepts benign races on diagnostic reads.
+    virtual bool copyInputState(void * outBuffer, uint32_t bufferSize) LOCALONLY;
 };
 
 #endif /* DS4HIDDevice_h */

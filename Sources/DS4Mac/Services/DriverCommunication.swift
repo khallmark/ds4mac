@@ -12,8 +12,10 @@
 
 import Foundation
 import IOKit
+import Observation
 
 /// Communicates with the DS4Driver dext via IOUserClient external methods.
+@Observable
 final class DriverCommunication {
 
     // MARK: - Selector IDs (must match DS4UserClient.cpp)
@@ -140,6 +142,33 @@ final class DriverCommunication {
             headphones: output[2] != 0,
             mic: output[3] != 0
         )
+    }
+
+    /// Read the current parsed input state from the DS4 controller via the dext.
+    /// Returns the raw bytes of the C++ DS4InputState struct.
+    func getInputState() throws -> [UInt8] {
+        guard isConnected else { throw DriverError.notConnected }
+
+        // Buffer must be large enough for the C++ DS4InputState struct.
+        // The struct is ~80 bytes on arm64; use 256 as a safe upper bound.
+        var outputSize = 256
+        var outputBuffer = [UInt8](repeating: 0, count: outputSize)
+
+        let result = outputBuffer.withUnsafeMutableBytes { ptr -> kern_return_t in
+            IOConnectCallStructMethod(
+                connection,
+                Selector.getInputState,
+                nil,
+                0,
+                ptr.baseAddress,
+                &outputSize
+            )
+        }
+        guard result == KERN_SUCCESS else {
+            throw DriverError.methodFailed(Selector.getInputState, result)
+        }
+
+        return Array(outputBuffer.prefix(outputSize))
     }
 
     // MARK: - Errors

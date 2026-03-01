@@ -11,6 +11,7 @@ struct MainView: View {
         case status = "Status"
         case led = "LED"
         case rumble = "Rumble"
+        case trackpad = "Trackpad"
         case data = "Data"
         case settings = "Settings"
 
@@ -21,6 +22,7 @@ struct MainView: View {
             case .status:   return "info.circle"
             case .led:      return "lightbulb.fill"
             case .rumble:   return "waveform.path"
+            case .trackpad: return "hand.point.up.braille"
             case .data:     return "list.bullet.rectangle"
             case .settings: return "gear"
             }
@@ -57,6 +59,14 @@ struct MainView: View {
                     Label("Calibrate", systemImage: "slider.horizontal.3")
                 }
                 .help("Open Overlay Position Debug Panel")
+            }
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    openWindow(id: "space-combat")
+                } label: {
+                    Label("Space Combat", systemImage: "gamecontroller")
+                }
+                .help("Open Space Combat Mini-Game")
             }
             ToolbarItem(placement: .automatic) {
                 Button {

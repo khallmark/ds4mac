@@ -10,6 +10,8 @@ struct DS4MacApp: App {
     @State private var manager = DS4TransportManager(transport: DS4USBTransport())
     @State private var extensionManager = ExtensionManager()
     @State private var calibration = DS4LayoutCalibration()
+    @State private var driverComm = DriverCommunication()
+    @State private var trackpadManager = DS4TrackpadManager()
 
     var body: some Scene {
         WindowGroup {
@@ -17,6 +19,11 @@ struct DS4MacApp: App {
                 .environment(manager)
                 .environment(extensionManager)
                 .environment(calibration)
+                .environment(driverComm)
+                .environment(trackpadManager)
+                .onAppear {
+                    trackpadManager.attach(to: manager)
+                }
         }
         .windowResizability(.contentSize)
 
@@ -25,6 +32,12 @@ struct DS4MacApp: App {
                 .environment(manager)
         }
         .defaultSize(width: 800, height: 600)
+
+        Window("Space Combat", id: "space-combat") {
+            SpaceCombatWindow()
+                .environment(manager)
+        }
+        .defaultSize(width: 900, height: 700)
 
         Window("Overlay Debug", id: "overlay-debug") {
             OverlayDebugPanel()

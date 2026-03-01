@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - --sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/DriverKit.platform/Developer/SDKs/DriverKit25.2.sdk
+    - -isystem/Applications/Xcode.app/Contents/Developer/Platforms/DriverKit.platform/Developer/SDKs/DriverKit25.2.sdk/System/DriverKit/System/Library/Frameworks/DriverKit.framework/Headers
+    - -isystem/Applications/Xcode.app/Contents/Developer/Platforms/DriverKit.platform/Developer/SDKs/DriverKit25.2.sdk/System/DriverKit/System/Library/Frameworks/HIDDriverKit.framework/Headers
+    - -isystem/Applications/Xcode.app/Contents/Developer/Platforms/DriverKit.platform/Developer/SDKs/DriverKit25.2.sdk/System/DriverKit/System/Library/Frameworks/USBDriverKit.framework/Headers
+    - -std=c++20
+    - -x
+    - c++
