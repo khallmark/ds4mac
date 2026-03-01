@@ -22,15 +22,17 @@ final class DS4LayoutCalibration {
     var leftStick = DS4Layout.leftStickCenter
     var rightStick = DS4Layout.rightStickCenter
     var touchpad = DS4Layout.touchpadCenter
+    var touchpadSize = DS4Layout.touchpadSize
     var centerButtons = CGPoint(x: 195, y: 100)
 
-    // Shared button spacing (distance from center to each d-pad arm / face button)
-    var buttonSpacing = DS4Layout.buttonSpacing
+    // Button spacing (distance from center to each arm/dot)
+    var dpadSpacing = DS4Layout.dpadSpacing
+    var faceButtonSpacing = DS4Layout.faceButtonSpacing
 
     // CenterButtonsOverlay internal offsets (relative to centerButtons position)
-    var shareOffset = CGSize(width: -47, height: -24)
-    var optionsOffset = CGSize(width: 47, height: -24)
-    var psOffset = CGSize(width: 0, height: 40)
+    var shareOffset = CGSize(width: -69, height: -64)
+    var optionsOffset = CGSize(width: 71, height: -64)
+    var psOffset = CGSize(width: 2, height: 20)
 
     // MARK: - Actions
 
@@ -45,11 +47,13 @@ final class DS4LayoutCalibration {
         leftStick = DS4Layout.leftStickCenter
         rightStick = DS4Layout.rightStickCenter
         touchpad = DS4Layout.touchpadCenter
+        touchpadSize = DS4Layout.touchpadSize
         centerButtons = CGPoint(x: 195, y: 100)
-        buttonSpacing = DS4Layout.buttonSpacing
-        shareOffset = CGSize(width: -47, height: -24)
-        optionsOffset = CGSize(width: 47, height: -24)
-        psOffset = CGSize(width: 0, height: 40)
+        dpadSpacing = DS4Layout.dpadSpacing
+        faceButtonSpacing = DS4Layout.faceButtonSpacing
+        shareOffset = CGSize(width: -69, height: -64)
+        optionsOffset = CGSize(width: 71, height: -64)
+        psOffset = CGSize(width: 2, height: 20)
     }
 
     func swiftCode() -> String {
@@ -65,7 +69,9 @@ final class DS4LayoutCalibration {
         static let leftStickCenter = CGPoint(x: \(Int(leftStick.x)), y: \(Int(leftStick.y)))
         static let rightStickCenter = CGPoint(x: \(Int(rightStick.x)), y: \(Int(rightStick.y)))
         static let touchpadCenter = CGPoint(x: \(Int(touchpad.x)), y: \(Int(touchpad.y)))
-        static let buttonSpacing: CGFloat = \(Int(buttonSpacing))
+        static let touchpadSize = CGSize(width: \(Int(touchpadSize.width)), height: \(Int(touchpadSize.height)))
+        static let dpadSpacing: CGFloat = \(Int(dpadSpacing))
+        static let faceButtonSpacing: CGFloat = \(Int(faceButtonSpacing))
 
         // CenterButtonsOverlay anchor
         .position(x: \(Int(centerButtons.x)), y: \(Int(centerButtons.y)))

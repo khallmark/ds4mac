@@ -47,6 +47,7 @@ struct OverlayDebugPanel: View {
                     positionSection("L2", point: $cal.l2)
                     positionSection("R2", point: $cal.r2)
                     positionSection("Touchpad", point: $cal.touchpad)
+                    sizeSection("Touchpad Size", size: $cal.touchpadSize)
                     positionSection("Center Btns", point: $cal.centerButtons)
 
                     Divider().padding(.vertical, 4)
@@ -57,7 +58,11 @@ struct OverlayDebugPanel: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 12)
 
-                    axisRow("sp", value: $cal.buttonSpacing, range: 4...40)
+                    axisRow("dpad", value: $cal.dpadSpacing, range: 4...40)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 2)
+
+                    axisRow("face", value: $cal.faceButtonSpacing, range: 4...40)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 2)
 
@@ -104,6 +109,37 @@ struct OverlayDebugPanel: View {
                     .font(.caption.bold())
                 Spacer()
                 Text("(\(Int(point.wrappedValue.x)), \(Int(point.wrappedValue.y)))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 2)
+    }
+
+    // MARK: - Size Section (w/h sliders for a CGSize)
+
+    @ViewBuilder
+    private func sizeSection(_ label: String, size: Binding<CGSize>) -> some View {
+        DisclosureGroup {
+            VStack(spacing: 4) {
+                axisRow("w", value: Binding(
+                    get: { size.wrappedValue.width },
+                    set: { size.wrappedValue.width = $0 }
+                ), range: 10...300)
+
+                axisRow("h", value: Binding(
+                    get: { size.wrappedValue.height },
+                    set: { size.wrappedValue.height = $0 }
+                ), range: 10...200)
+            }
+            .padding(.leading, 4)
+        } label: {
+            HStack {
+                Text(label)
+                    .font(.caption.bold())
+                Spacer()
+                Text("\(Int(size.wrappedValue.width))×\(Int(size.wrappedValue.height))")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }

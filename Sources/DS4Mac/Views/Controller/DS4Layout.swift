@@ -22,25 +22,24 @@ enum DS4Layout {
     static let lightBarSize = CGSize(width: 80, height: 4)
 
     // Shoulder buttons (L1/R1)
-    static let l1Center = CGPoint(x: 86, y: 40)
-    static let r1Center = CGPoint(x: 304, y: 40)
+    static let l1Center = CGPoint(x: 94, y: 15)
+    static let r1Center = CGPoint(x: 299, y: 15)
     static let shoulderButtonSize = CGSize(width: 40, height: 12)
 
     // Trigger indicators (L2/R2)
-    static let l2Center = CGPoint(x: 66, y: 22)
-    static let r2Center = CGPoint(x: 324, y: 22)
+    static let l2Center = CGPoint(x: 90, y: 0)
+    static let r2Center = CGPoint(x: 300, y: 0)
     static let triggerSize = CGSize(width: 35, height: 10)
 
     // D-Pad
-    static let dpadCenter = CGPoint(x: 93, y: 84)
+    static let dpadCenter = CGPoint(x: 90, y: 70)
     static let dpadArmSize: CGFloat = 12
+    static let dpadSpacing: CGFloat = 18
 
     // Face buttons (triangle/circle/cross/square)
-    static let faceButtonCenter = CGPoint(x: 302, y: 71)
+    static let faceButtonCenter = CGPoint(x: 302, y: 70)
     static let faceButtonRadius: CGFloat = 8
-
-    // Shared spacing: distance from center point to each button/arm for both d-pad and face buttons
-    static let buttonSpacing: CGFloat = 18
+    static let faceButtonSpacing: CGFloat = 26
 
     // Analog sticks
     static let leftStickCenter = CGPoint(x: 142, y: 117)
@@ -50,9 +49,9 @@ enum DS4Layout {
     static let stickDotTravel: CGFloat = 15 // max pixel offset from center
 
     // Touchpad area on controller body
-    static let touchpadCenter = CGPoint(x: 195, y: 75)
-    static let touchpadSize = CGSize(width: 110, height: 34)
-
+    static let touchpadCenter = CGPoint(x: 196, y: 56)
+    static let touchpadSize = CGSize(width: 110, height: 50)
+    
     // Center buttons
     static let shareCenter = CGPoint(x: 148, y: 76)
     static let optionsCenter = CGPoint(x: 242, y: 76)

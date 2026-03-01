@@ -78,7 +78,10 @@ public struct DS4CalibrationData: Codable, Equatable, Sendable {
 
     /// Calibrate a raw gyroscope reading to degrees per second.
     ///
-    /// Formula: `(rawValue - bias) * (gyroSpeedPlus + gyroSpeedMinus) / (plus - minus)`
+    /// Formula: `(rawValue - bias) * (gyroSpeedPlus + gyroSpeedMinus) / abs(plus - minus)`
+    ///
+    /// Uses absolute value of denominator to handle DS4v1 controllers (PID 0x05C4)
+    /// with inverted yaw calibration data (docs/08-Gyroscope-IMU-Feature.md Section 3.3.4).
     ///
     /// - Parameters:
     ///   - axis: Which gyro axis (.pitch, .yaw, .roll)
@@ -103,12 +106,18 @@ public struct DS4CalibrationData: Codable, Equatable, Sendable {
 
         let speed2x = Int32(gyroSpeedPlus) + Int32(gyroSpeedMinus)
         let adjusted = Int32(rawValue) - Int32(bias)
-        return Double(adjusted) * Double(speed2x) / Double(denom)
+        // abs() handles DS4v1 inverted yaw axis (Section 3.3.4)
+        return Double(adjusted) * Double(speed2x) / Double(abs(denom))
     }
 
     /// Calibrate a raw accelerometer reading to g-force.
     ///
-    /// Formula: `(rawValue - ((plus + minus) / 2)) / ((plus - minus) / 2)`
+    /// Formula: `(rawValue - ((plus + minus) / 2)) / abs((plus - minus) / 2)`
+    ///
+    /// Uses absolute value of halfRange to handle DS4v1 controllers where
+    /// plus/minus calibration references may be inverted (plus < minus).
+    /// The sign of the result is determined by `(rawValue - center)`, not
+    /// by the ordering of plus/minus references.
     ///
     /// - Parameters:
     ///   - axis: Which accel axis (.pitch maps to X, .yaw to Y, .roll to Z)
@@ -131,7 +140,8 @@ public struct DS4CalibrationData: Codable, Equatable, Sendable {
         guard range != 0 else { return Double(rawValue) }
 
         let center = (Int32(plus) + Int32(minus)) / 2
-        let halfRange = Double(range) / 2.0
+        // abs() handles DS4v1 controllers with inverted plus/minus references
+        let halfRange = abs(Double(range) / 2.0)
         return Double(Int32(rawValue) - center) / halfRange
     }
 

@@ -21,7 +21,7 @@ struct StickOverlay: View {
         ZStack {
             if pressed {
                 Circle()
-                    .fill(Color.accentColor.opacity(debug ? 0.6 : 0.3))
+                    .fill(Color.accentColor.opacity(debug ? 0.6 : 0.45))
                     .frame(width: DS4Layout.stickWellRadius * 2,
                            height: DS4Layout.stickWellRadius * 2)
                     .blur(radius: debug ? 0 : 8)
@@ -45,7 +45,7 @@ struct StickOverlay: View {
 /// D-pad glow highlights. Shows all 4 arms in debug mode, only active direction otherwise.
 struct DPadOverlay: View {
     let direction: DS4DPadDirection
-    var spacing: CGFloat = DS4Layout.buttonSpacing
+    var spacing: CGFloat = DS4Layout.dpadSpacing
     var debug = false
 
     private var upActive: Bool {
@@ -93,7 +93,7 @@ struct DPadOverlay: View {
 
     private func glowPill() -> some View {
         RoundedRectangle(cornerRadius: 4)
-            .fill(Color.accentColor.opacity(debug ? 0.8 : 0.45))
+            .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
             .frame(width: arm, height: arm)
             .blur(radius: debug ? 0 : 4)
     }
@@ -104,7 +104,7 @@ struct DPadOverlay: View {
 /// Face button glow dots. Each button shows its signature color when pressed.
 struct FaceButtonOverlay: View {
     let buttons: DS4Buttons
-    var spacing: CGFloat = DS4Layout.buttonSpacing
+    var spacing: CGFloat = DS4Layout.faceButtonSpacing
     var debug = false
 
     private let diameter = DS4Layout.faceButtonRadius * 2
@@ -132,10 +132,10 @@ struct FaceButtonOverlay: View {
 
     private func glowDot(color: Color) -> some View {
         Circle()
-            .fill(color.opacity(debug ? 0.9 : 0.5))
+            .fill(color.opacity(debug ? 0.9 : 0.65))
             .frame(width: diameter, height: diameter)
             .blur(radius: debug ? 0 : 6)
-            .shadow(color: debug ? .clear : color.opacity(0.4), radius: 8)
+            .shadow(color: debug ? .clear : color.opacity(0.5), radius: 8)
     }
 }
 
@@ -149,7 +149,7 @@ struct ShoulderOverlay: View {
     var body: some View {
         if active {
             Capsule()
-                .fill(Color.accentColor.opacity(debug ? 0.8 : 0.5))
+                .fill(Color.accentColor.opacity(debug ? 0.8 : 0.65))
                 .frame(width: DS4Layout.shoulderButtonSize.width,
                        height: DS4Layout.shoulderButtonSize.height)
                 .blur(radius: debug ? 0 : 5)
@@ -169,7 +169,7 @@ struct TriggerOverlay: View {
     var body: some View {
         if value > 0 {
             Capsule()
-                .fill(Color.accentColor.opacity(debug ? 0.8 : Double(fraction) * 0.6))
+                .fill(Color.accentColor.opacity(debug ? 0.8 : Double(fraction) * 0.75))
                 .frame(width: debug ? DS4Layout.triggerSize.width : max(4, fraction * DS4Layout.triggerSize.width),
                        height: DS4Layout.triggerSize.height)
                 .blur(radius: debug ? 0 : 3)
@@ -186,9 +186,9 @@ struct CenterButtonsOverlay: View {
     var debug = false
 
     var body: some View {
-        let share = calibration?.shareOffset ?? CGSize(width: -47, height: -24)
-        let options = calibration?.optionsOffset ?? CGSize(width: 47, height: -24)
-        let ps = calibration?.psOffset ?? CGSize(width: 0, height: 40)
+        let share = calibration?.shareOffset ?? CGSize(width: -69, height: -64)
+        let options = calibration?.optionsOffset ?? CGSize(width: 71, height: -64)
+        let ps = calibration?.psOffset ?? CGSize(width: 2, height: 20)
 
         ZStack {
             // Center anchor dot in debug mode
@@ -200,7 +200,7 @@ struct CenterButtonsOverlay: View {
 
             if buttons.share {
                 Capsule()
-                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.45))
+                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
                     .frame(width: 26, height: 9)
                     .blur(radius: debug ? 0 : 3)
                     .offset(share)
@@ -208,7 +208,7 @@ struct CenterButtonsOverlay: View {
 
             if buttons.options {
                 Capsule()
-                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.45))
+                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
                     .frame(width: 26, height: 9)
                     .blur(radius: debug ? 0 : 3)
                     .offset(options)
@@ -216,7 +216,7 @@ struct CenterButtonsOverlay: View {
 
             if buttons.ps {
                 Circle()
-                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.45))
+                    .fill(Color.accentColor.opacity(debug ? 0.8 : 0.6))
                     .frame(width: 12, height: 12)
                     .blur(radius: debug ? 0 : 4)
                     .offset(ps)
@@ -262,10 +262,8 @@ struct LightBarOverlay: View {
 struct TouchpadDotsOverlay: View {
     let touch0: DS4TouchFinger
     let touch1: DS4TouchFinger
+    var padSize: CGSize = DS4Layout.touchpadSize
     var debug = false
-
-    private let padWidth = DS4Layout.touchpadSize.width
-    private let padHeight = DS4Layout.touchpadSize.height
 
     var body: some View {
         ZStack {
@@ -273,7 +271,7 @@ struct TouchpadDotsOverlay: View {
             if debug {
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(Color.accentColor.opacity(0.5), lineWidth: 1)
-                    .frame(width: padWidth, height: padHeight)
+                    .frame(width: padSize.width, height: padSize.height)
             }
 
             if touch0.active {
@@ -283,18 +281,18 @@ struct TouchpadDotsOverlay: View {
                 touchDot(finger: touch1, color: .orange)
             }
         }
-        .frame(width: padWidth, height: padHeight)
+        .frame(width: padSize.width, height: padSize.height)
         .clipped()
     }
 
     @ViewBuilder
     private func touchDot(finger: DS4TouchFinger, color: Color) -> some View {
-        let px = CGFloat(finger.x) / DS4Layout.touchMaxX * padWidth
-        let py = CGFloat(finger.y) / DS4Layout.touchMaxY * padHeight
+        let px = CGFloat(finger.x) / DS4Layout.touchMaxX * padSize.width
+        let py = CGFloat(finger.y) / DS4Layout.touchMaxY * padSize.height
 
         ZStack {
             Circle()
-                .fill(color.opacity(debug ? 0.5 : 0.25))
+                .fill(color.opacity(debug ? 0.5 : 0.4))
                 .frame(width: 20, height: 20)
 
             Circle()
