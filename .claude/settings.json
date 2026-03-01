@@ -3,7 +3,8 @@
     "allow": [
       "Bash(kill:*)",
       "Bash(pkill:*)",
-      "Bash(xcodegen generate:*)"
+      "Bash(xcodegen generate:*)",
+      "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild build:*)"
     ]
   }
 }

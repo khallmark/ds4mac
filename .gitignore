@@ -28,3 +28,4 @@ DerivedData
 .build
 .claude/settings.local.json
 Example Code/**/*
+.playwright-mcp

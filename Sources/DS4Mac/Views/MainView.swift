@@ -28,31 +28,44 @@ struct MainView: View {
     }
 
     @Environment(DS4TransportManager.self) var manager
+    @Environment(\.openWindow) private var openWindow
     @State private var inspectorTab: InspectorTab = .status
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                // Hero area (left)
-                ScrollView {
-                    VStack(spacing: 20) {
-                        ControllerVisualizationView()
-                        TouchpadVisualizationView()
-                    }
-                    .padding()
-                }
-                .frame(minWidth: 460)
-                .frame(maxWidth: .infinity)
+                // Hero area (left) — controller photo fills available space
+                DS4ControllerView()
+                    .padding(.horizontal, 4)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 Divider()
 
                 // Inspector panel (right)
                 InspectorView(tab: $inspectorTab)
-                    .frame(width: 300)
+                    .frame(width: 350)
             }
 
             StatusBarView()
         }
-        .frame(minWidth: 800, minHeight: 550)
+        .frame(width: 960, height: 640)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    openWindow(id: "overlay-debug")
+                } label: {
+                    Label("Calibrate", systemImage: "slider.horizontal.3")
+                }
+                .help("Open Overlay Position Debug Panel")
+            }
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    openWindow(id: "gyroscope-3d")
+                } label: {
+                    Label("3D View", systemImage: "rotate.3d")
+                }
+                .help("Open 3D Gyroscope Visualization")
+            }
+        }
     }
 }

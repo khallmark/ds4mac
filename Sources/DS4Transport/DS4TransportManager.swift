@@ -35,6 +35,9 @@ public final class DS4TransportManager {
     /// Last output state sent to the controller (LED color, rumble).
     public private(set) var outputState: DS4OutputState = DS4OutputState()
 
+    /// IMU calibration data read from the controller on connect.
+    public private(set) var calibrationData: DS4CalibrationData?
+
     /// Error message, if any.
     public private(set) var lastError: String?
 
@@ -96,6 +99,7 @@ public final class DS4TransportManager {
         transport.disconnect()
         connectionState = .disconnected
         deviceInfo = nil
+        calibrationData = nil
         pendingState = nil
     }
 
@@ -135,6 +139,38 @@ public final class DS4TransportManager {
 
     // MARK: - Private
 
+    private func loadCalibrationData(connectionType: DS4ConnectionType) {
+        let reportID: UInt8
+        let length: Int
+
+        switch connectionType {
+        case .bluetooth:
+            reportID = DS4ReportID.calibrationBT
+            length = 41  // 37 payload + 4 CRC
+        case .usb:
+            reportID = DS4ReportID.calibrationUSB
+            length = DS4ReportSize.calibration
+        }
+
+        guard let data = transport.readFeatureReport(reportID: reportID, length: length) else {
+            calibrationData = nil
+            return
+        }
+
+        do {
+            let cal: DS4CalibrationData
+            switch connectionType {
+            case .bluetooth:
+                cal = try DS4CalibrationDataParser.parseBluetooth(data)
+            case .usb:
+                cal = try DS4CalibrationDataParser.parseUSB(data)
+            }
+            calibrationData = cal.isValid ? cal : nil
+        } catch {
+            calibrationData = nil
+        }
+    }
+
     private func setupTransportCallbacks() {
         transport.onEvent = { [weak self] event in
             Task { @MainActor [weak self] in
@@ -149,6 +185,7 @@ public final class DS4TransportManager {
             deviceInfo = info
             connectionState = .connected
             lastError = nil
+            loadCalibrationData(connectionType: info.connectionType)
 
         case .disconnected:
             connectionState = .disconnected

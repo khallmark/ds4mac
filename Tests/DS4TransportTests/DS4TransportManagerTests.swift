@@ -158,6 +158,88 @@ final class DS4TransportManagerTests: XCTestCase {
         XCTAssertEqual(result, calibrationData)
     }
 
+    // MARK: - Calibration Loading Tests
+
+    /// Build a minimal valid 37-byte USB calibration report with non-zero denominators.
+    private func makeValidCalibrationReport() -> [UInt8] {
+        var report = [UInt8](repeating: 0, count: 37)
+        report[0] = 0x02  // USB calibration report ID
+
+        // Gyro bias: bytes 1-6 (all zero is fine)
+        // Gyro plus/minus (USB interleaved): need non-zero denominators
+        writeInt16LE(&report, 7, 8839)    // pitchPlus
+        writeInt16LE(&report, 9, -8889)   // pitchMinus
+        writeInt16LE(&report, 11, 8856)   // yawPlus
+        writeInt16LE(&report, 13, -8864)  // yawMinus
+        writeInt16LE(&report, 15, 8820)   // rollPlus
+        writeInt16LE(&report, 17, -8852)  // rollMinus
+
+        // Gyro speed: bytes 19-22
+        writeInt16LE(&report, 19, 540)    // speedPlus
+        writeInt16LE(&report, 21, 540)    // speedMinus
+
+        // Accel plus/minus: bytes 23-34
+        writeInt16LE(&report, 23, 7807)   // accelXPlus
+        writeInt16LE(&report, 25, -8402)  // accelXMinus
+        writeInt16LE(&report, 27, 7761)   // accelYPlus
+        writeInt16LE(&report, 29, -8528)  // accelYMinus
+        writeInt16LE(&report, 31, 8179)   // accelZPlus
+        writeInt16LE(&report, 33, -7937)  // accelZMinus
+
+        return report
+    }
+
+    private func writeInt16LE(_ buf: inout [UInt8], _ offset: Int, _ value: Int16) {
+        let bits = UInt16(bitPattern: value)
+        buf[offset]     = UInt8(bits & 0xFF)
+        buf[offset + 1] = UInt8(bits >> 8)
+    }
+
+    func testCalibrationLoadedOnConnect() async {
+        let (manager, transport) = makeManager()
+        transport.featureReports[0x02] = makeValidCalibrationReport()
+
+        manager.connect()
+        await Task.yield()
+
+        XCTAssertNotNil(manager.calibrationData)
+        XCTAssertTrue(manager.calibrationData?.isValid ?? false)
+    }
+
+    func testCalibrationNilWhenReportMissing() async {
+        let (manager, _) = makeManager()
+        // No feature reports configured — readFeatureReport returns nil
+        manager.connect()
+        await Task.yield()
+
+        XCTAssertNil(manager.calibrationData)
+    }
+
+    func testCalibrationNilWhenDataInvalid() async {
+        let (manager, transport) = makeManager()
+        // All-zero report has zero denominators → isValid == false
+        var invalidReport = [UInt8](repeating: 0, count: 37)
+        invalidReport[0] = 0x02
+        transport.featureReports[0x02] = invalidReport
+
+        manager.connect()
+        await Task.yield()
+
+        XCTAssertNil(manager.calibrationData)
+    }
+
+    func testCalibrationClearedOnDisconnect() async {
+        let (manager, transport) = makeManager()
+        transport.featureReports[0x02] = makeValidCalibrationReport()
+
+        manager.connect()
+        await Task.yield()
+        XCTAssertNotNil(manager.calibrationData)
+
+        manager.disconnect()
+        XCTAssertNil(manager.calibrationData)
+    }
+
     // MARK: - Disconnection Event Tests
 
     func testTransportDisconnectionUpdatesState() async {

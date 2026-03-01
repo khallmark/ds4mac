@@ -8,15 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		0FCF18B9F5918216BB180A99 /* InspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A9333774EC486B8FA571F /* InspectorView.swift */; };
-		12008BD7853FE2AF577F0E0B /* TouchpadVisualizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B15ED98AF47E0D1BA13E71C1 /* TouchpadVisualizationView.swift */; };
 		2312814877AFE5E72E38150A /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BD431F0AEE3032BC779665 /* MainView.swift */; };
 		308DB4E1CAFDE7983347601B /* ControllerStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D956690792C8810EE455C0F4 /* ControllerStatusView.swift */; };
+		4C4F3F91A3E70D24301D32F6 /* GyroscopeWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965D9302D566FA4034AEFD05 /* GyroscopeWindow.swift */; };
 		5C35C487B31BCFD9203BF709 /* DS4Protocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3731D9E428BF6EAB066C5E7A /* DS4Protocol.cpp */; };
 		5D9F07CC3B24D04DDED5AEB5 /* DS4HIDDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 31061928D2CA3EB27636136F /* DS4HIDDevice.cpp */; };
+		5DB86890108FEF0B0C2A2344 /* OverlayDebugPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BD771499D2F95E24A72088B /* OverlayDebugPanel.swift */; };
 		6BF7BEA429C6FCE9AEB8E486 /* DS4UserClient.iig in Sources */ = {isa = PBXBuildFile; fileRef = 716866734A5E2B9DBEF735C8 /* DS4UserClient.iig */; };
 		6F888CEC7560DE53D0616DA8 /* RumbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8DE02992AB837D97AD21BDE /* RumbleView.swift */; };
+		832F3BD96F00022BF360288F /* DS4LayoutCalibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494342A085C121B8F7C310EB /* DS4LayoutCalibration.swift */; };
 		85EE0FA8BB80D15448984899 /* LightBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472F98C67536AA36D9528222 /* LightBarView.swift */; };
 		8768734ED5FD0454A2FA31DD /* DS4HIDDevice.iig in Sources */ = {isa = PBXBuildFile; fileRef = DBC9CFAA315E7C5E04F79E3B /* DS4HIDDevice.iig */; };
+		87A28C1457C49EBFDE2AEA3D /* DS4ControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47603A488D31E21D4E3EB9F /* DS4ControllerView.swift */; };
 		8CE41FED1966E2E06024FAA7 /* MonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2F0B29753AA2124CB3E451 /* MonitorView.swift */; };
 		8EF3E45B2CC2119319954A0A /* ExtensionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCE9261434E152539E3C227 /* ExtensionManager.swift */; };
 		9256933A6EC235376F596E73 /* DS4UserClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09B87867BE9B7C8C993FB436 /* DS4UserClient.cpp */; };
@@ -25,11 +28,16 @@
 		97F59737E2FE29E9F043ED51 /* DS4Protocol in Frameworks */ = {isa = PBXBuildFile; productRef = 54BF44D03A67BE85D0D87EBF /* DS4Protocol */; };
 		A78AC921F488E277C84721B3 /* DriverCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE12CBCF9FD083CA45A56FE /* DriverCommunication.swift */; };
 		AC64E10A2ACB15C6221F5BAC /* DS4Transport in Frameworks */ = {isa = PBXBuildFile; productRef = 4198FD884A30DC25ABC4EE0F /* DS4Transport */; };
+		B5DF9606BC65298121D4CDA8 /* OrientationFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 247C7CBC1AEC5E6B1FA4801B /* OrientationFilter.swift */; };
 		B8431E92DE042229073C53CD /* SystemExtensions.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 019C0606B208F3134C8D8D47 /* SystemExtensions.framework */; };
 		BB0398422DDC7ED105B209A0 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32DDF41540D281F00A62A506 /* IOKit.framework */; };
-		C77179F35B4938CE52E209F2 /* ControllerVisualizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79261D0B62A5DAA42402E2E2 /* ControllerVisualizationView.swift */; };
+		BF6E905443F6B82FE9948904 /* SpaceshipSceneController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471BD7A1CE13047351B464D5 /* SpaceshipSceneController.swift */; };
+		CAA9B989F013063C39507833 /* DS4ControllerArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8F1E42367FE8B3C5D2A252 /* DS4ControllerArtwork.swift */; };
+		D30DC5108DA5A9C1EAA0FC2A /* DS4OverlayViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FDD6BEAB3AA5EFA10D008DA /* DS4OverlayViews.swift */; };
+		D3D8B0B632EE2F017CF845BE /* DS4Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15BA27F7D84C5387942EB7BA /* DS4Layout.swift */; };
 		D852F50F8C705608475A9F96 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94BC5CA53811F96EC03FE20 /* SettingsView.swift */; };
 		DA077CF385884C0EB010AB33 /* DS4MacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4832069FA24120DD010250 /* DS4MacApp.swift */; };
+		FA40128739D5EDC2F70F5747 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 459C915159F50C358FFDF54A /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,21 +68,29 @@
 		019C0606B208F3134C8D8D47 /* SystemExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemExtensions.framework; path = System/Library/Frameworks/SystemExtensions.framework; sourceTree = SDKROOT; };
 		04BDD960E0847AA05300AAC5 /* DS4Protocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DS4Protocol.h; sourceTree = "<group>"; };
 		09B87867BE9B7C8C993FB436 /* DS4UserClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4UserClient.cpp; sourceTree = "<group>"; };
+		15BA27F7D84C5387942EB7BA /* DS4Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4Layout.swift; sourceTree = "<group>"; };
+		247C7CBC1AEC5E6B1FA4801B /* OrientationFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationFilter.swift; sourceTree = "<group>"; };
 		2552B18C8E685CEE9B9FBA7B /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
+		2FDD6BEAB3AA5EFA10D008DA /* DS4OverlayViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4OverlayViews.swift; sourceTree = "<group>"; };
 		31061928D2CA3EB27636136F /* DS4HIDDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4HIDDevice.cpp; sourceTree = "<group>"; };
 		32DDF41540D281F00A62A506 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		3731D9E428BF6EAB066C5E7A /* DS4Protocol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4Protocol.cpp; sourceTree = "<group>"; };
+		3F8F1E42367FE8B3C5D2A252 /* DS4ControllerArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4ControllerArtwork.swift; sourceTree = "<group>"; };
+		459C915159F50C358FFDF54A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		471BD7A1CE13047351B464D5 /* SpaceshipSceneController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceshipSceneController.swift; sourceTree = "<group>"; };
 		472A9333774EC486B8FA571F /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
 		472F98C67536AA36D9528222 /* LightBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightBarView.swift; sourceTree = "<group>"; };
+		494342A085C121B8F7C310EB /* DS4LayoutCalibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4LayoutCalibration.swift; sourceTree = "<group>"; };
 		5B4832069FA24120DD010250 /* DS4MacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4MacApp.swift; sourceTree = "<group>"; };
 		6BB602BF9F7477E880B9ABF3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6BCE9261434E152539E3C227 /* ExtensionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionManager.swift; sourceTree = "<group>"; };
+		6BD771499D2F95E24A72088B /* OverlayDebugPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayDebugPanel.swift; sourceTree = "<group>"; };
 		70D38C37DE34086A29CFBA48 /* DS4ReportDescriptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DS4ReportDescriptor.h; sourceTree = "<group>"; };
 		716866734A5E2B9DBEF735C8 /* DS4UserClient.iig */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.iig; path = DS4UserClient.iig; sourceTree = "<group>"; };
 		75FCF417CBCF6C578B91BFD4 /* DS4Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DS4Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		79261D0B62A5DAA42402E2E2 /* ControllerVisualizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerVisualizationView.swift; sourceTree = "<group>"; };
+		965D9302D566FA4034AEFD05 /* GyroscopeWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyroscopeWindow.swift; sourceTree = "<group>"; };
 		AE6F3C028DFFDDDCE1D9A89C /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
-		B15ED98AF47E0D1BA13E71C1 /* TouchpadVisualizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchpadVisualizationView.swift; sourceTree = "<group>"; };
+		B47603A488D31E21D4E3EB9F /* DS4ControllerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4ControllerView.swift; sourceTree = "<group>"; };
 		B8DE02992AB837D97AD21BDE /* RumbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RumbleView.swift; sourceTree = "<group>"; };
 		B94BC5CA53811F96EC03FE20 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BF2F0B29753AA2124CB3E451 /* MonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorView.swift; sourceTree = "<group>"; };
@@ -83,7 +99,7 @@
 		DFE12CBCF9FD083CA45A56FE /* DriverCommunication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverCommunication.swift; sourceTree = "<group>"; };
 		F0BD431F0AEE3032BC779665 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
-		"TEMP_683A0A4C-0572-4A06-955D-EF4A54F742FD" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
+		"TEMP_AAA39460-DBE6-47A2-982C-497BB1877167" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +120,7 @@
 		0C6D8200D63D04976D1B37B1 /* DS4Mac */ = {
 			isa = PBXGroup;
 			children = (
+				459C915159F50C358FFDF54A /* Assets.xcassets */,
 				5B4832069FA24120DD010250 /* DS4MacApp.swift */,
 				6BB602BF9F7477E880B9ABF3 /* Info.plist */,
 				CE04AA2740E95C39AE8BA223 /* Services */,
@@ -136,11 +153,39 @@
 			path = DS4Driver;
 			sourceTree = "<group>";
 		};
+		376DA4EF885956068AE20A7F /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				494342A085C121B8F7C310EB /* DS4LayoutCalibration.swift */,
+				6BD771499D2F95E24A72088B /* OverlayDebugPanel.swift */,
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		66FF208F9AF866C3A4440792 /* Gyroscope */ = {
+			isa = PBXGroup;
+			children = (
+				965D9302D566FA4034AEFD05 /* GyroscopeWindow.swift */,
+				471BD7A1CE13047351B464D5 /* SpaceshipSceneController.swift */,
+			);
+			path = Gyroscope;
+			sourceTree = "<group>";
+		};
+		75C3D068AB5DED2580642D8E /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				3F8F1E42367FE8B3C5D2A252 /* DS4ControllerArtwork.swift */,
+				B47603A488D31E21D4E3EB9F /* DS4ControllerView.swift */,
+				15BA27F7D84C5387942EB7BA /* DS4Layout.swift */,
+				2FDD6BEAB3AA5EFA10D008DA /* DS4OverlayViews.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		7A09960118E42DD49F3D8FA5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				D956690792C8810EE455C0F4 /* ControllerStatusView.swift */,
-				79261D0B62A5DAA42402E2E2 /* ControllerVisualizationView.swift */,
 				472A9333774EC486B8FA571F /* InspectorView.swift */,
 				472F98C67536AA36D9528222 /* LightBarView.swift */,
 				F0BD431F0AEE3032BC779665 /* MainView.swift */,
@@ -148,7 +193,9 @@
 				B8DE02992AB837D97AD21BDE /* RumbleView.swift */,
 				B94BC5CA53811F96EC03FE20 /* SettingsView.swift */,
 				AE6F3C028DFFDDDCE1D9A89C /* StatusBarView.swift */,
-				B15ED98AF47E0D1BA13E71C1 /* TouchpadVisualizationView.swift */,
+				75C3D068AB5DED2580642D8E /* Controller */,
+				376DA4EF885956068AE20A7F /* Debug */,
+				66FF208F9AF866C3A4440792 /* Gyroscope */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -193,6 +240,7 @@
 			children = (
 				DFE12CBCF9FD083CA45A56FE /* DriverCommunication.swift */,
 				6BCE9261434E152539E3C227 /* ExtensionManager.swift */,
+				247C7CBC1AEC5E6B1FA4801B /* OrientationFilter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -205,6 +253,7 @@
 			buildConfigurationList = 7D449CD99B691DF17F1B4AE8 /* Build configuration list for PBXNativeTarget "DS4Mac" */;
 			buildPhases = (
 				82E8EC6B52E0985726EA4895 /* Sources */,
+				58D8939CB2E4DEE9A17B8F3D /* Resources */,
 				5C3C02CD8079D0603B4347CA /* Frameworks */,
 				04D0760F21476684567D44CC /* Embed System Extensions */,
 			);
@@ -280,6 +329,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		58D8939CB2E4DEE9A17B8F3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA40128739D5EDC2F70F5747 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		35042C387AAAF0554AC347F2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -298,18 +358,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				308DB4E1CAFDE7983347601B /* ControllerStatusView.swift in Sources */,
-				C77179F35B4938CE52E209F2 /* ControllerVisualizationView.swift in Sources */,
+				CAA9B989F013063C39507833 /* DS4ControllerArtwork.swift in Sources */,
+				87A28C1457C49EBFDE2AEA3D /* DS4ControllerView.swift in Sources */,
+				D3D8B0B632EE2F017CF845BE /* DS4Layout.swift in Sources */,
+				832F3BD96F00022BF360288F /* DS4LayoutCalibration.swift in Sources */,
 				DA077CF385884C0EB010AB33 /* DS4MacApp.swift in Sources */,
+				D30DC5108DA5A9C1EAA0FC2A /* DS4OverlayViews.swift in Sources */,
 				A78AC921F488E277C84721B3 /* DriverCommunication.swift in Sources */,
 				8EF3E45B2CC2119319954A0A /* ExtensionManager.swift in Sources */,
+				4C4F3F91A3E70D24301D32F6 /* GyroscopeWindow.swift in Sources */,
 				0FCF18B9F5918216BB180A99 /* InspectorView.swift in Sources */,
 				85EE0FA8BB80D15448984899 /* LightBarView.swift in Sources */,
 				2312814877AFE5E72E38150A /* MainView.swift in Sources */,
 				8CE41FED1966E2E06024FAA7 /* MonitorView.swift in Sources */,
+				B5DF9606BC65298121D4CDA8 /* OrientationFilter.swift in Sources */,
+				5DB86890108FEF0B0C2A2344 /* OverlayDebugPanel.swift in Sources */,
 				6F888CEC7560DE53D0616DA8 /* RumbleView.swift in Sources */,
 				D852F50F8C705608475A9F96 /* SettingsView.swift in Sources */,
+				BF6E905443F6B82FE9948904 /* SpaceshipSceneController.swift in Sources */,
 				931D56C9F41AF27516FD4F63 /* StatusBarView.swift in Sources */,
-				12008BD7853FE2AF577F0E0B /* TouchpadVisualizationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

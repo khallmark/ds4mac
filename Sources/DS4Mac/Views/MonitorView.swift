@@ -2,11 +2,36 @@
 // Shows sticks, buttons, triggers, IMU, touchpad, and battery in real-time.
 
 import SwiftUI
+import Charts
 import DS4Protocol
 import DS4Transport
 
+/// A single timestamped IMU data point for the rolling chart buffer.
+struct IMUSample: Identifiable {
+    let id: Int
+    let gyroPitch: Double
+    let gyroYaw: Double
+    let gyroRoll: Double
+    let accelX: Double
+    let accelY: Double
+    let accelZ: Double
+}
+
+/// A flattened per-series point for Swift Charts rendering.
+struct IMUChartPoint: Identifiable {
+    let id: Int
+    let sampleIndex: Int
+    let value: Double
+    let axis: String
+}
+
 struct MonitorView: View {
     @Environment(DS4TransportManager.self) var manager
+
+    @State private var imuSamples: [IMUSample] = []
+    @State private var sampleCounter: Int = 0
+    @State private var showCalibrated: Bool = true
+    private let maxSamples = 90
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -103,21 +128,153 @@ struct MonitorView: View {
 
     // MARK: - IMU
 
+    private var useCalibrated: Bool {
+        showCalibrated && manager.calibrationData != nil
+    }
+
     @ViewBuilder
     private var imuSection: some View {
         let imu = manager.inputState.imu
-        GroupBox("IMU (Gyroscope & Accelerometer)") {
-            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
-                GridRow {
-                    Text("Gyro:")
-                    Text("P=\(f6(imu.gyroPitch))  Y=\(f6(imu.gyroYaw))  R=\(f6(imu.gyroRoll))")
-                }
-                GridRow {
-                    Text("Accel:")
-                    Text("X=\(f6(imu.accelX))  Y=\(f6(imu.accelY))  Z=\(f6(imu.accelZ))")
+        let cal = manager.calibrationData
+
+        GroupBox {
+            VStack(alignment: .leading, spacing: 4) {
+                Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
+                    if useCalibrated, let cal {
+                        GridRow {
+                            Text("Gyro:")
+                            Text("P=\(fd(cal.calibrateGyro(axis: .pitch, rawValue: imu.gyroPitch)))  Y=\(fd(cal.calibrateGyro(axis: .yaw, rawValue: imu.gyroYaw)))  R=\(fd(cal.calibrateGyro(axis: .roll, rawValue: imu.gyroRoll))) deg/s")
+                        }
+                        GridRow {
+                            Text("Accel:")
+                            Text("X=\(fg(cal.calibrateAccel(axis: .pitch, rawValue: imu.accelX)))  Y=\(fg(cal.calibrateAccel(axis: .yaw, rawValue: imu.accelY)))  Z=\(fg(cal.calibrateAccel(axis: .roll, rawValue: imu.accelZ))) g")
+                        }
+                    } else {
+                        GridRow {
+                            Text("Gyro:")
+                            Text("P=\(f6(imu.gyroPitch))  Y=\(f6(imu.gyroYaw))  R=\(f6(imu.gyroRoll))")
+                        }
+                        GridRow {
+                            Text("Accel:")
+                            Text("X=\(f6(imu.accelX))  Y=\(f6(imu.accelY))  Z=\(f6(imu.accelZ))")
+                        }
+                    }
                 }
             }
             .padding(.vertical, 4)
+        } label: {
+            HStack {
+                Text("IMU (Gyroscope & Accelerometer)")
+                Spacer()
+                Toggle("Calibrated", isOn: $showCalibrated)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .disabled(cal == nil)
+            }
+        }
+
+        gyroChart
+        accelChart
+            .onChange(of: manager.inputState.imu) { _, newIMU in
+                appendSample(from: newIMU)
+            }
+    }
+
+    // MARK: - Gyroscope Chart
+
+    @ViewBuilder
+    private var gyroChart: some View {
+        let cal = useCalibrated ? manager.calibrationData : nil
+        let gyroLabel = cal != nil ? "deg/s" : "raw"
+        let points = imuSamples.flatMap { s in
+            [
+                IMUChartPoint(id: s.id &* 3, sampleIndex: s.id,
+                              value: cal?.calibrateGyro(axis: .pitch, rawValue: Int16(s.gyroPitch)) ?? s.gyroPitch,
+                              axis: "Pitch"),
+                IMUChartPoint(id: s.id &* 3 &+ 1, sampleIndex: s.id,
+                              value: cal?.calibrateGyro(axis: .yaw, rawValue: Int16(s.gyroYaw)) ?? s.gyroYaw,
+                              axis: "Yaw"),
+                IMUChartPoint(id: s.id &* 3 &+ 2, sampleIndex: s.id,
+                              value: cal?.calibrateGyro(axis: .roll, rawValue: Int16(s.gyroRoll)) ?? s.gyroRoll,
+                              axis: "Roll"),
+            ]
+        }
+
+        GroupBox("Gyroscope") {
+            Chart(points) { point in
+                LineMark(
+                    x: .value("Sample", point.sampleIndex),
+                    y: .value(gyroLabel, point.value)
+                )
+                .foregroundStyle(by: .value("Axis", point.axis))
+                .lineStyle(StrokeStyle(lineWidth: 1.5))
+                .interpolationMethod(.catmullRom)
+            }
+            .chartForegroundStyleScale([
+                "Pitch": Color.red,
+                "Yaw": Color.green,
+                "Roll": Color.blue,
+            ])
+            .chartXAxis(.hidden)
+            .chartXScale(domain: (imuSamples.first?.id ?? 0)...(imuSamples.last?.id ?? maxSamples))
+            .chartYAxis {
+                AxisMarks(position: .leading) { _ in
+                    AxisGridLine()
+                    AxisValueLabel()
+                        .font(.system(.caption2, design: .monospaced))
+                }
+            }
+            .chartLegend(position: .top, alignment: .leading, spacing: 4)
+            .frame(height: 120)
+        }
+    }
+
+    // MARK: - Accelerometer Chart
+
+    @ViewBuilder
+    private var accelChart: some View {
+        let cal = useCalibrated ? manager.calibrationData : nil
+        let accelLabel = cal != nil ? "g" : "raw"
+        let points = imuSamples.flatMap { s in
+            [
+                IMUChartPoint(id: s.id &* 3, sampleIndex: s.id,
+                              value: cal?.calibrateAccel(axis: .pitch, rawValue: Int16(s.accelX)) ?? s.accelX,
+                              axis: "X"),
+                IMUChartPoint(id: s.id &* 3 &+ 1, sampleIndex: s.id,
+                              value: cal?.calibrateAccel(axis: .yaw, rawValue: Int16(s.accelY)) ?? s.accelY,
+                              axis: "Y"),
+                IMUChartPoint(id: s.id &* 3 &+ 2, sampleIndex: s.id,
+                              value: cal?.calibrateAccel(axis: .roll, rawValue: Int16(s.accelZ)) ?? s.accelZ,
+                              axis: "Z"),
+            ]
+        }
+
+        GroupBox("Accelerometer") {
+            Chart(points) { point in
+                LineMark(
+                    x: .value("Sample", point.sampleIndex),
+                    y: .value(accelLabel, point.value)
+                )
+                .foregroundStyle(by: .value("Axis", point.axis))
+                .lineStyle(StrokeStyle(lineWidth: 1.5))
+                .interpolationMethod(.catmullRom)
+            }
+            .chartForegroundStyleScale([
+                "X": Color.orange,
+                "Y": Color.cyan,
+                "Z": Color.purple,
+            ])
+            .chartXAxis(.hidden)
+            .chartXScale(domain: (imuSamples.first?.id ?? 0)...(imuSamples.last?.id ?? maxSamples))
+            .chartYAxis {
+                AxisMarks(position: .leading) { _ in
+                    AxisGridLine()
+                    AxisValueLabel()
+                        .font(.system(.caption2, design: .monospaced))
+                }
+            }
+            .chartLegend(position: .top, alignment: .leading, spacing: 4)
+            .frame(height: 120)
         }
     }
 
@@ -151,6 +308,23 @@ struct MonitorView: View {
 
     // MARK: - Helpers
 
+    private func appendSample(from imu: DS4IMUState) {
+        let sample = IMUSample(
+            id: sampleCounter,
+            gyroPitch: Double(imu.gyroPitch),
+            gyroYaw: Double(imu.gyroYaw),
+            gyroRoll: Double(imu.gyroRoll),
+            accelX: Double(imu.accelX),
+            accelY: Double(imu.accelY),
+            accelZ: Double(imu.accelZ)
+        )
+        sampleCounter += 1
+        imuSamples.append(sample)
+        if imuSamples.count > maxSamples {
+            imuSamples.removeFirst(imuSamples.count - maxSamples)
+        }
+    }
+
     private func buttonChip(_ label: String, active: Bool) -> some View {
         Text(label)
             .font(.system(.caption, design: .monospaced))
@@ -183,5 +357,15 @@ struct MonitorView: View {
     /// Format Int16 as right-aligned 6-char string
     private func f6(_ val: Int16) -> String {
         String(format: "%6d", val)
+    }
+
+    /// Format Double as deg/s with 1 decimal place, right-aligned 7 chars
+    private func fd(_ val: Double) -> String {
+        String(format: "%7.1f", val)
+    }
+
+    /// Format Double as g-force with 2 decimal places, right-aligned 6 chars
+    private func fg(_ val: Double) -> String {
+        String(format: "%6.2f", val)
     }
 }
