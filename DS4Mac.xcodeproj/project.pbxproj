@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -97,7 +97,7 @@
 		3731D9E428BF6EAB066C5E7A /* DS4Protocol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DS4Protocol.cpp; sourceTree = "<group>"; };
 		3EDDA6D71BD8F55F3611B87F /* GameInputState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameInputState.swift; sourceTree = "<group>"; };
 		3F8F1E42367FE8B3C5D2A252 /* DS4ControllerArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS4ControllerArtwork.swift; sourceTree = "<group>"; };
-		452BB7527242ECD78921E3F0 /* .clangd */ = {isa = PBXFileReference; path = .clangd; sourceTree = "<group>"; };
+		452BB7527242ECD78921E3F0 /* .clangd */ = {isa = PBXFileReference; lastKnownFileType = text; path = .clangd; sourceTree = "<group>"; };
 		459C915159F50C358FFDF54A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		471BD7A1CE13047351B464D5 /* SpaceshipSceneController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceshipSceneController.swift; sourceTree = "<group>"; };
 		472A9333774EC486B8FA571F /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
@@ -126,9 +126,8 @@
 		DFE12CBCF9FD083CA45A56FE /* DriverCommunication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverCommunication.swift; sourceTree = "<group>"; };
 		F0BD431F0AEE3032BC779665 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		F27647B7FCBFF18A070C231A /* WeaponSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponSystem.swift; sourceTree = "<group>"; };
-		F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
+		F72802D3F81B288B6E5E4D17 /* DS4Driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; name = DS4Driver.dext; path = com.ds4mac.driver.DS4Driver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAC3B5D4EF9EA11EB77C953E /* SpaceCombatWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceCombatWindow.swift; sourceTree = "<group>"; };
-		"TEMP_A5192479-4953-40F2-A287-7F7C396D277C" /* ds4mac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ds4mac; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -371,7 +370,6 @@
 				C834AF528300DF990079F474 /* XCLocalSwiftPackageReference "." */,
 				47945FB6EE4477980A8000F9 /* XCLocalSwiftPackageReference "." */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -475,9 +473,12 @@
 					"@executable_path/../Frameworks",
 				);
 				OTHER_LDFLAGS = (
-					"-framework DriverKit",
-					"-framework HIDDriverKit",
-					"-framework USBDriverKit",
+					"-framework",
+					DriverKit,
+					"-framework",
+					HIDDriverKit,
+					"-framework",
+					USBDriverKit,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.driver.DS4Driver;
 				PRODUCT_NAME = com.ds4mac.driver.DS4Driver;
@@ -504,9 +505,12 @@
 					"@executable_path/../Frameworks",
 				);
 				OTHER_LDFLAGS = (
-					"-framework DriverKit",
-					"-framework HIDDriverKit",
-					"-framework USBDriverKit",
+					"-framework",
+					DriverKit,
+					"-framework",
+					HIDDriverKit,
+					"-framework",
+					USBDriverKit,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.driver.DS4Driver;
 				PRODUCT_NAME = com.ds4mac.driver.DS4Driver;
@@ -576,14 +580,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "DS4Mac-Debug.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = Sources/DS4Mac/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "DS4 Mac";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.app;
 				PRODUCT_NAME = DS4Mac;
 				SDKROOT = macosx;
@@ -595,14 +604,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "DS4Mac-Release.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = Sources/DS4Mac/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "DS4 Mac";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ds4mac.app;
 				PRODUCT_NAME = DS4Mac;
 				SDKROOT = macosx;
